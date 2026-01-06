@@ -1,0 +1,25 @@
+# Agile Sprint 설정
+
+# 프로젝트 정보
+project:
+  name: "concurrency-control-poc"
+  description: "재고 차감 동시성 제어 4가지 방법 성능 비교 PoC"
+
+# Sprint 기본 설정
+sprint:
+  default_duration_days: 7  # 기본 Sprint 기간 (일)
+
+# 팀원 (Phase 2에서 사용)
+team:
+  - name: "jujin"
+    role: "Developer"
+  # Phase 2에서 지인 추가 예정
+  # - name: "김동역"
+  #   role: "Developer"
+  # - name: "홍수석"
+  #   role: "Developer"
+
+# 알림 설정 (Phase 2에서 사용)
+notifications:
+  daily_standup: false  # Phase 1에서는 비활성화
+  weekly_review: true   # 주 1회 회고
