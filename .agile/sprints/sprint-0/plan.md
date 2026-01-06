@@ -37,20 +37,23 @@
 ### Sprint 0 시작: 프로젝트 범위 및 워크플로우 결정
 
 #### ADR 작성 (의사결정 기록)
-- [ ] ADR-001: 왜 이 4가지 방법을 비교하는가?
+- [x] ADR-001: 왜 이 4가지 방법을 비교하는가?
   - Context: 동시성 제어 방법이 많은데 왜 이 4가지인가?
   - Decision: Pessimistic, Optimistic, Redis Lock, Lua Script 선택
   - Consequences: 실무 적용 가능한 주요 방법 비교 가능
+  - **완료:** 2026-01-06
 
-- [ ] ADR-002: 왜 PoC 범위로 축소했는가?
+- [x] ADR-002: 왜 PoC 범위로 축소했는가?
   - Context: 원래 3가지 기술(동시성, 조회, EDA)을 하려 했으나
   - Decision: 동시성 제어 하나만 깊게
   - Consequences: 1-2달 안에 완성 가능, 전문성 증명
+  - **완료:** 2026-01-06
 
-- [ ] ADR-003: 왜 시각화를 먼저 하는가?
+- [x] ADR-003: 왜 시각화를 먼저 하는가?
   - Context: 전통적 방식은 구현 → 문서화
   - Decision: AI 시대에는 시각화 → 검토 → 구현
   - Consequences: 잘못된 방향으로 개발 방지, 인지 부하 감소
+  - **완료:** 2026-01-06
 
 **Note:**
 - 이 3개 ADR은 Sprint 시작 시 프로젝트 전체 방향을 결정하며 작성
@@ -61,17 +64,20 @@
 ### Iteration 1: 인프라 환경 구축 (Infrastructure)
 
 #### US-0.1: 인프라 시각화 + 기술 스택 결정
-- [ ] Docker Compose 환경 다이어그램 작성 (Mermaid)
+- [x] Docker Compose 환경 다이어그램 작성 (Mermaid)
   - MySQL 8.0, Redis 7.0 컨테이너 구성
   - 네트워크 설정 및 볼륨 구조
   - 포트 매핑 및 헬스체크 설정
-- [ ] 데이터 초기화 플로우 다이어그램 작성
+  - **완료:** 2026-01-06
+- [x] 데이터 초기화 플로우 다이어그램 작성
   - 재고 100개 생성 프로세스
   - 초기 데이터 스키마
-- [ ] **ADR-004: 왜 MySQL과 Redis를 선택했는가?**
+  - **완료:** 2026-01-06
+- [x] **ADR-004: 왜 MySQL과 Redis를 선택했는가?**
   - Context: 다양한 DB/캐시 옵션 (PostgreSQL, MongoDB, Memcached 등)
   - Decision: MySQL 8.0 + Redis 7.0 선택
   - Consequences: 범용성, 학습 자료 풍부, 실무 적용 가능
+  - **완료:** 2026-01-06
 
 **Acceptance Criteria:**
 - 인프라 다이어그램을 보고 누구나 환경 구성 이해 가능
