@@ -14,7 +14,7 @@
 graph TB
     subgraph "Docker Compose 환경"
         subgraph "애플리케이션 계층"
-            API["Spring Boot API<br/>Port: 8080<br/>Image: openjdk:17-jdk-slim"]
+            API["Spring Boot API<br/>Port: 8080<br/>Image: openjdk:21-jdk-slim"]
         end
 
         subgraph "데이터 계층"
@@ -45,9 +45,9 @@ graph TB
 
 | 컨테이너 | 이미지 | 포트 | 용도 |
 |---------|--------|------|------|
-| **mysql** | mysql:8.0 | 3306 | 재고 데이터 영속화 (Stock 테이블) |
-| **redis** | redis:7.0-alpine | 6379 | 분산 락 + Lua Script 실행 |
-| **api** | openjdk:17-jdk-slim | 8080 | Spring Boot API (개발 중에는 로컬 실행) |
+| **mysql** | mysql:8.0 | 13306 | 재고 데이터 영속화 (Stock 테이블) |
+| **redis** | redis:7.0-alpine | 16379 | 분산 락 + Lua Script 실행 |
+| **api** | openjdk:21-jdk-slim | 8080 | Spring Boot API (개발 중에는 로컬 실행) |
 
 ### 네트워크 설정
 
@@ -65,7 +65,7 @@ graph LR
 
 - **네트워크 이름:** `concurrency-network`
 - **네트워크 드라이버:** bridge
-- **컨테이너 간 통신:** 서비스 이름으로 통신 (mysql, redis)
+- **컨테이너 간 통신:** 서비스 이름으로 통신 (mysql, redis) - *내부 포트는 그대로 3306, 6379 사용*
 
 ---
 
@@ -94,11 +94,11 @@ sequenceDiagram
     Script->>MySQL: INSERT 재고 100개 (id=1, quantity=100)
     MySQL-->>Script: 초기화 완료
 
-    Dev->>Make: make init (선택)
+    Dev->>Make: make reset (선택)
     Make->>API: 재고 데이터 재설정 API 호출
     API->>MySQL: UPDATE stock SET quantity=100
     MySQL-->>API: 업데이트 완료
-    API-->>Dev: 재고 초기화 완료
+    API-->>Dev: 재고 리셋 완료
 ```
 
 ### 초기 데이터 스키마
@@ -199,8 +199,8 @@ healthcheck:
 graph LR
     subgraph "호스트 머신"
         H8080["localhost:8080"]
-        H3306["localhost:3306"]
-        H6379["localhost:6379"]
+        H3306["localhost:13306"]
+        H6379["localhost:16379"]
     end
 
     subgraph "Docker 컨테이너"
@@ -216,13 +216,13 @@ graph LR
 
 **포트 매핑:**
 - `8080:8080` - Spring Boot API
-- `3306:3306` - MySQL
-- `6379:6379` - Redis
+- `13306:3306` - MySQL
+- `16379:6379` - Redis
 
 **접근 방법:**
 - API: `http://localhost:8080`
-- MySQL: `mysql -h localhost -P 3306 -u root -p`
-- Redis: `redis-cli -h localhost -p 6379`
+- MySQL: `mysql -h localhost -P 13306 -u root -p`
+- Redis: `redis-cli -h localhost -p 16379`
 
 ---
 
@@ -256,8 +256,8 @@ SPRING_REDIS_PORT=6379
 ```mermaid
 graph TD
     Start[프로젝트 시작] --> Up[make up]
-    Up --> Init[make init]
-    Init --> Test[make test]
+    Up --> Reset[make reset]
+    Reset --> Test[make test]
     Test --> Down{종료?}
     Down -->|Yes| Stop[make down]
     Down -->|No| Test
@@ -270,12 +270,12 @@ graph TD
 
 | 명령어 | 동작 | 설명 |
 |--------|------|------|
-| `make up` | docker-compose up -d | 모든 컨테이너 시작 (백그라운드) |
-| `make down` | docker-compose down | 모든 컨테이너 중지 및 제거 |
-| `make init` | 데이터 초기화 API 호출 | 재고를 100개로 재설정 |
-| `make logs` | docker-compose logs -f | 전체 로그 실시간 확인 |
-| `make ps` | docker-compose ps | 컨테이너 상태 확인 |
-| `make clean` | docker-compose down -v | 컨테이너 + 볼륨 모두 제거 |
+| `make up` | docker compose up -d | 모든 컨테이너 시작 (백그라운드) |
+| `make down` | docker compose down | 모든 컨테이너 중지 및 제거 |
+| `make reset` | 데이터 리셋 API 호출 | 재고를 100개로 복구 (테스트 재수행용) |
+| `make logs` | docker compose logs -f | 전체 로그 실시간 확인 |
+| `make ps` | docker compose ps | 컨테이너 상태 확인 |
+| `make clean` | docker compose down -v | 컨테이너 + 볼륨 모두 제거 |
 | `make restart` | down + up | 전체 재시작 |
 | `make mysql` | mysql 접속 | MySQL CLI 접속 |
 | `make redis` | redis-cli 접속 | Redis CLI 접속 |

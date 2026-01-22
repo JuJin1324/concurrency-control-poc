@@ -5,7 +5,7 @@
 **Name:** Concurrency Control PoC (Proof of Concept)
 **Goal:** Verify and compare 4 methods of concurrency control in a high-traffic environment (Stock reduction scenario).
 **Primary Tech Stack:**
--   **Language:** Java 17+
+-   **Language:** Java 21
 -   **Framework:** Spring Boot 3.x
 -   **Database:** MySQL 8.0 (Persistence), Redis 7.0 (Distributed Lock/Cache)
 -   **Testing:** JUnit 5, ArchUnit (Architecture), k6 (Load Testing)
