@@ -29,3 +29,4 @@ pom.xml.versionsBackup
 *.tmp
 *.swp
 *~
+.claude/skills/*.backup/
