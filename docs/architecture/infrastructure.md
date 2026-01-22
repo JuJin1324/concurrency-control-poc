@@ -14,23 +14,23 @@
 graph TB
     subgraph "Docker Compose 환경"
         subgraph "애플리케이션 계층"
-            API[Spring Boot API<br/>Port: 8080<br/>Image: openjdk:17-jdk-slim]
+            API["Spring Boot API<br/>Port: 8080<br/>Image: openjdk:17-jdk-slim"]
         end
 
         subgraph "데이터 계층"
-            MySQL[(MySQL 8.0<br/>Port: 3306<br/>Database: concurrency_db)]
-            Redis[(Redis 7.0<br/>Port: 6379)]
+            MySQL[("MySQL 8.0<br/>Port: 3306<br/>Database: concurrency_db")]
+            Redis[("Redis 7.0<br/>Port: 6379")]
         end
 
         subgraph "볼륨 (데이터 영속화)"
-            MySQLVol[mysql_data<br/>Volume]
-            RedisVol[redis_data<br/>Volume]
+            MySQLVol["mysql_data<br/>Volume"]
+            RedisVol["redis_data<br/>Volume"]
         end
     end
 
     subgraph "외부 (호스트)"
-        Developer[개발자<br/>localhost:8080]
-        K6[k6 부하 테스트<br/>localhost:8080/api/stock]
+        Developer["개발자<br/>localhost:8080"]
+        K6["k6 부하 테스트<br/>localhost:8080/api/stock"]
     end
 
     Developer -->|HTTP Request| API
@@ -133,13 +133,13 @@ INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 100);
 ```mermaid
 graph LR
     subgraph "Docker Volumes"
-        MySQLVol[mysql_data<br/>Type: named volume]
-        RedisVol[redis_data<br/>Type: named volume]
+        MySQLVol["mysql_data<br/>Type: named volume"]
+        RedisVol["redis_data<br/>Type: named volume"]
     end
 
     subgraph "컨테이너 내부 경로"
-        MySQLPath[/var/lib/mysql]
-        RedisPath[/data]
+        MySQLPath["/var/lib/mysql"]
+        RedisPath["/data"]
     end
 
     MySQLVol -.-> MySQLPath
@@ -198,15 +198,15 @@ healthcheck:
 ```mermaid
 graph LR
     subgraph "호스트 머신"
-        H8080[localhost:8080]
-        H3306[localhost:3306]
-        H6379[localhost:6379]
+        H8080["localhost:8080"]
+        H3306["localhost:3306"]
+        H6379["localhost:6379"]
     end
 
     subgraph "Docker 컨테이너"
-        C8080[API:8080]
-        C3306[MySQL:3306]
-        C6379[Redis:6379]
+        C8080["API:8080"]
+        C3306["MySQL:3306"]
+        C6379["Redis:6379"]
     end
 
     H8080 -.->|Port Mapping| C8080
