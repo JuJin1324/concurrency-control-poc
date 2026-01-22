@@ -62,14 +62,14 @@ flowchart LR
         D1[2W 정의<br/>brainstorm.md]
         D2[ADR 4개 작성]
         D3[인프라 시각화]
+        D4[Sprint 0<br/>인프라 구현<br/>Docker + Makefile]
     end
 
     subgraph InProgress["🔄 진행 중"]
-        IP1[Sprint 0<br/>인프라 구현<br/>Docker + Makefile]
+        IP1[Sprint 0<br/>Spring Boot<br/>스캐폴딩]
     end
 
     subgraph Todo["📋 할 일"]
-        T1[Spring Boot<br/>스캐폴딩]
         T2[DB Lock 구현]
         T3[Redis Lock 구현]
         T4[부하 테스트]
@@ -78,9 +78,9 @@ flowchart LR
 
     D1 --> D2
     D2 --> D3
-    D3 --> IP1
-    IP1 --> T1
-    T1 --> T2
+    D3 --> D4
+    D4 --> IP1
+    IP1 --> T2
     T2 --> T3
     T3 --> T4
     T4 --> T5
@@ -148,8 +148,8 @@ flowchart LR
 3. Iteration 3: 전체 시스템 시각화 + 문서화
 
 **산출물:**
-- [ ] Docker Compose (MySQL + Redis)
-- [ ] Makefile (make up/down/init)
+- [x] Docker Compose (MySQL + Redis)
+- [x] Makefile (make up/down/init)
 - [ ] ADR 5개
 - [ ] 아키텍처 다이어그램 (C4, Sequence 4종)
 - [ ] README 초안
@@ -291,5 +291,6 @@ flowchart LR
 
 ---
 
-**최종 업데이트:** 2026-01-15
-**상태:** 1H 구조화 완료 (Sprint 0 진행 중)
+**최종 업데이트:** 2026-01-22
+**상태:** Sprint 0 - Iteration 2 (스캐폴딩) 진행 중
+--- End of content ---
