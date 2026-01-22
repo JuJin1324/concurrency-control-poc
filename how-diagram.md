@@ -26,12 +26,15 @@
 
 ```mermaid
 flowchart TD
-    subgraph Current["🔄 현재 위치: Sprint 0"]
+    subgraph Foundation["✅ Foundation (완료)"]
         S0[Sprint 0<br/>플랫폼 엔지니어링<br/>+ 아키텍처 설계]
     end
 
-    subgraph Phase1["Phase 1: 핵심 구현"]
+    subgraph Current["🔄 현재 위치: Phase 1 (진행 예정)"]
         S1[Sprint 1<br/>DB Lock<br/>Pessimistic + Optimistic]
+    end
+
+    subgraph Phase1["Phase 1: 핵심 구현"]
         S2[Sprint 2<br/>Redis Lock<br/>Distributed + Lua Script]
     end
 
@@ -47,7 +50,7 @@ flowchart TD
         S5[Sprint 5<br/>모니터링/확장]
     end
 
-    S0 -->|Foundation| S1
+    S0 -->|Done| S1
     S1 -->|4가지 방법 중 2개| S2
     S2 -->|4가지 모두 완성| S3
     S3 -->|정량 지표 확보| S4
@@ -60,13 +63,14 @@ flowchart TD
 flowchart LR
     subgraph Done["✅ 완료"]
         D1[2W 정의<br/>brainstorm.md]
-        D2[ADR 4개 작성]
+        D2[ADR 5개 작성]
         D3[인프라 시각화]
         D4[Sprint 0<br/>인프라 구현<br/>Docker + Makefile]
+        D5[Sprint 0<br/>Spring Boot<br/>스캐폴딩]
     end
 
     subgraph InProgress["🔄 진행 중"]
-        IP1[Sprint 0<br/>Spring Boot<br/>스캐폴딩]
+        
     end
 
     subgraph Todo["📋 할 일"]
@@ -79,8 +83,8 @@ flowchart LR
     D1 --> D2
     D2 --> D3
     D3 --> D4
-    D4 --> IP1
-    IP1 --> T2
+    D4 --> D5
+    D5 --> T2
     T2 --> T3
     T3 --> T4
     T4 --> T5
@@ -150,9 +154,9 @@ flowchart LR
 **산출물:**
 - [x] Docker Compose (MySQL + Redis)
 - [x] Makefile (make up/down/init)
-- [ ] ADR 5개
-- [ ] 아키텍처 다이어그램 (C4, Sequence 4종)
-- [ ] README 초안
+- [x] ADR 5개
+- [x] 아키텍처 다이어그램 (C4, Sequence 4종)
+- [x] README 초안
 
 **완료 기준:**
 - `make up` 실행 시 MySQL + Redis 정상 동작
@@ -278,7 +282,7 @@ flowchart LR
 | ADR-002 | 왜 PoC 범위로 축소했는가? | ✅ 완료 |
 | ADR-003 | 왜 시각화를 먼저 하는가? | ✅ 완료 |
 | ADR-004 | 왜 MySQL과 Redis를 선택했는가? | ✅ 완료 |
-| ADR-005 | 왜 Layered Architecture를 선택했는가? | 📋 예정 |
+| ADR-005 | 왜 Layered Architecture를 선택했는가? | ✅ 완료 |
 
 ---
 
@@ -292,5 +296,5 @@ flowchart LR
 ---
 
 **최종 업데이트:** 2026-01-22
-**상태:** Sprint 0 - Iteration 2 (스캐폴딩) 진행 중
+**상태:** Sprint 0 완료 (Foundation 구축 끝) → Sprint 1 대기
 --- End of content ---
