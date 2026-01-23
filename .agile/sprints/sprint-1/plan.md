@@ -27,17 +27,17 @@
 ### Iteration 1: Stock Domain 모델 구현
 
 #### US-1.1: Stock Entity 설계
-- [ ] Stock Entity 작성 (JPA Entity, domain 패키지)
+- [x] Stock Entity 작성 (JPA Entity, domain 패키지)
   - `@Entity`, `@Table(name = "stock")`
   - id (Long, `@Id`, `@GeneratedValue`)
   - productId (String, 상품 ID)
   - quantity (int, 재고 수량)
   - version (Long, `@Version` - Optimistic Lock용)
   - createdAt, updatedAt (Timestamp)
-- [ ] 비즈니스 로직 메서드
+- [x] 비즈니스 로직 메서드
   - `decrease(int amount)` - 재고 차감
   - `isAvailable(int amount)` - 재고 확인
-- [ ] 비즈니스 불변식
+- [x] 비즈니스 불변식
   - 재고는 0 이상이어야 함
   - 재고 부족 시 예외 발생 (InsufficientStockException)
 
@@ -49,12 +49,12 @@
 ---
 
 #### US-1.2: Stock Repository 구현
-- [ ] StockRepository 인터페이스 작성
+- [x] StockRepository 인터페이스 작성
   - `JpaRepository<Stock, Long>` 상속
   - Pessimistic Lock 메서드 추가
     - `@Lock(LockModeType.PESSIMISTIC_WRITE)`
     - `Optional<Stock> findByIdWithPessimisticLock(Long id)`
-- [ ] 기본 CRUD 메서드 확인
+- [x] 기본 CRUD 메서드 확인
 
 **Acceptance Criteria:**
 - Repository가 Spring Data JPA 표준 사용
@@ -203,10 +203,10 @@
 ## Sprint 1 Definition of Done
 
 ### Iteration 1: Stock Domain 모델 ✅
-- [ ] Stock Entity 구현 (JPA, 비즈니스 로직 포함)
-- [ ] StockRepository 구현 (Spring Data JPA)
-- [ ] Pessimistic Lock 메서드 추가
-- [ ] ArchUnit 테스트 통과 (Domain 계층 규칙)
+- [x] Stock Entity 구현 (JPA, 비즈니스 로직 포함)
+- [x] StockRepository 구현 (Spring Data JPA)
+- [x] Pessimistic Lock 메서드 추가
+- [x] ArchUnit 테스트 통과 (Domain 계층 규칙)
 
 ### Iteration 2: Pessimistic Lock (전략 패턴) ✅
 - [ ] StockService 인터페이스 정의
