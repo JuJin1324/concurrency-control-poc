@@ -124,10 +124,10 @@
   - Stock Entity에서 `decrease()` 메서드 호출
   - Repository로 저장 (`@Version` 자동 체크)
 - [x] OptimisticLockException 처리
-- [x] Retry 로직 구현 (Self-injection 방식)
-  - 최대 3회 재시도
-  - 재시도 간 50ms 대기
-  - Self-injection으로 @Transactional 적용
+- [x] Retry 로직 구현 (Spring Framework 7 네이티브 @Retryable)
+  - 최대 10회 재시도
+  - Exponential Backoff (50ms → 100ms → ... → 1000ms)
+  - @EnableResilientMethods로 활성화
 
 **Acceptance Criteria:**
 - `@Version` 컬럼이 자동으로 증가 (로그 확인)
