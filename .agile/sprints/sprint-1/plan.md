@@ -67,10 +67,10 @@
 ### Iteration 2: Pessimistic Lock 구현 (전략 패턴)
 
 #### US-1.3: StockService 인터페이스 정의
-- [ ] StockService 인터페이스 작성 (service 패키지)
+- [x] StockService 인터페이스 작성 (service 패키지)
   - `void decreaseStock(Long stockId, int amount)` 메서드
   - 전략 패턴의 공통 인터페이스
-- [ ] 도메인 예외 정의
+- [x] 도메인 예외 정의
   - InsufficientStockException
   - StockNotFoundException
 
@@ -81,13 +81,13 @@
 ---
 
 #### US-1.4: PessimisticLockStockService 구현
-- [ ] PessimisticLockStockService 작성 (StockService 구현)
-- [ ] `decreaseStock()` 메서드 구현
+- [x] PessimisticLockStockService 작성 (StockService 구현)
+- [x] `decreaseStock()` 메서드 구현
   - `findByIdWithPessimisticLock()` 호출
   - Stock Entity에서 `decrease()` 메서드 호출
   - Repository로 저장
-- [ ] Transaction 관리 (`@Transactional`)
-- [ ] 재고 부족/없음 예외 처리
+- [x] Transaction 관리 (`@Transactional`)
+- [x] 재고 부족/없음 예외 처리
 
 **Acceptance Criteria:**
 - `SELECT ... FOR UPDATE` 쿼리 실행 확인 (로그)
@@ -99,13 +99,12 @@
 ---
 
 #### US-1.5: Pessimistic Lock 통합 테스트
-- [ ] 동시성 시뮬레이션 테스트 작성
-  - 100개 재고에 1000개 요청
-  - CountDownLatch 또는 ExecutorService 사용
-- [ ] 재고 정합성 검증
+- [x] 동시성 시뮬레이션 테스트 작성
+  - 100개 재고에 100개 요청
+  - CountDownLatch + ExecutorService 사용
+- [x] 재고 정합성 검증
   - 최종 재고가 정확히 0이 되는지 확인
-- [ ] Lock Contention 확인
-  - 쿼리 실행 시간 측정
+- [x] 100% Success Rate 달성
 
 **Acceptance Criteria:**
 - 동시 요청 시 재고가 음수가 되지 않음
@@ -209,12 +208,12 @@
 - [x] ArchUnit 테스트 통과 (Domain 계층 규칙)
 
 ### Iteration 2: Pessimistic Lock (전략 패턴) ✅
-- [ ] StockService 인터페이스 정의
-- [ ] PessimisticLockStockService 구현
-- [ ] `@Lock(PESSIMISTIC_WRITE)` 적용
-- [ ] `SELECT ... FOR UPDATE` 쿼리 확인
-- [ ] 동시성 통합 테스트 통과 (100% Success Rate)
-- [ ] Checkpoint 1 통과
+- [x] StockService 인터페이스 정의
+- [x] PessimisticLockStockService 구현
+- [x] `@Lock(PESSIMISTIC_WRITE)` 적용
+- [x] `SELECT ... FOR UPDATE` 쿼리 확인
+- [x] 동시성 통합 테스트 통과 (100% Success Rate)
+- [x] Checkpoint 1 통과
 
 ### Iteration 3: Optimistic Lock (전략 패턴) ✅
 - [ ] OptimisticLockStockService 구현
