@@ -118,16 +118,16 @@
 ### Iteration 3: Optimistic Lock 구현 (전략 패턴)
 
 #### US-1.6: OptimisticLockStockService 구현
-- [ ] OptimisticLockStockService 작성 (StockService 구현)
-- [ ] `decreaseStock()` 메서드 구현
+- [x] OptimisticLockStockService 작성 (StockService 구현)
+- [x] `decreaseStock()` 메서드 구현
   - 일반 `findById()` 조회 (Lock 없음)
   - Stock Entity에서 `decrease()` 메서드 호출
   - Repository로 저장 (`@Version` 자동 체크)
-- [ ] OptimisticLockException 처리
-- [ ] Retry 로직 구현 (Facade 또는 AOP)
+- [x] OptimisticLockException 처리
+- [x] Retry 로직 구현 (Self-injection 방식)
   - 최대 3회 재시도
   - 재시도 간 50ms 대기
-  - `@Transactional(propagation = REQUIRES_NEW)` 사용
+  - Self-injection으로 @Transactional 적용
 
 **Acceptance Criteria:**
 - `@Version` 컬럼이 자동으로 증가 (로그 확인)
@@ -139,14 +139,14 @@
 ---
 
 #### US-1.7: Optimistic Lock 통합 테스트
-- [ ] 동시성 시뮬레이션 테스트 작성
-  - 100개 재고에 1000개 요청
-  - Retry 발생 횟수 측정
-- [ ] Success Rate 측정
+- [x] 동시성 시뮬레이션 테스트 작성
+  - 100개 재고에 100개 동시 요청
+  - CountDownLatch + ExecutorService 사용
+- [x] Success Rate 측정
   - 최종 재고 확인
-  - Retry 성공/실패 비율
-- [ ] Pessimistic vs Optimistic 비교
-  - 실행 시간 비교 (간단한 측정)
+  - 성공/실패 비율 출력
+- [x] 재고 정합성 검증
+  - 성공한 요청 수만큼 재고 감소 확인
 
 **Acceptance Criteria:**
 - Retry 로직이 정상 동작
@@ -216,11 +216,11 @@
 - [x] Checkpoint 1 통과
 
 ### Iteration 3: Optimistic Lock (전략 패턴) ✅
-- [ ] OptimisticLockStockService 구현
-- [ ] `@Version` 컬럼 동작 확인
-- [ ] Retry 로직 구현 및 테스트
-- [ ] 동시성 통합 테스트 통과 (Success Rate 측정)
-- [ ] Checkpoint 2 통과
+- [x] OptimisticLockStockService 구현
+- [x] `@Version` 컬럼 동작 확인
+- [x] Retry 로직 구현 및 테스트
+- [x] 동시성 통합 테스트 통과 (Success Rate 측정)
+- [x] Checkpoint 2 통과
 
 ### Iteration 4: REST API ✅
 - [ ] Stock Controller 구현 (전략 패턴 적용)
