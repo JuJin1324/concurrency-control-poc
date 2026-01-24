@@ -28,40 +28,41 @@
 
 ## Tasks
 
-### Iteration 1: Redis Distributed Lock 구현
+### Iteration 1: Redis Distributed Lock 구현 ✅ 완료
 
-#### US-2.1: Redisson 설정 및 RLock 구현
-- [ ] Redisson 의존성 추가 (`org.redisson:redisson-spring-boot-starter`)
-- [ ] Redisson 설정 (`application.yml`)
-- [ ] RedisLockStockService 구현 (StockService 구현체)
+#### US-2.1: Redisson 설정 및 RLock 구현 ✅
+- [x] Redisson 의존성 추가 (`org.redisson:redisson-spring-boot-starter:4.1.0`)
+- [x] Redisson 설정 (Spring Boot 자동 설정 사용)
+- [x] RedisLockStockService 구현 (StockService 구현체)
   - `RLock.tryLock(waitTime, leaseTime, TimeUnit)` 사용
   - Lock 획득 실패 시 예외 처리
   - Lock 해제 보장 (finally 블록)
-- [ ] Transaction 관리 주의: Lock과 @Transactional 순서
+- [x] Transaction 관리 주의: Lock과 @Transactional 순서
+  - TransactionTemplate 사용하여 Lock 내부에서 트랜잭션 실행
 
-**Acceptance Criteria:**
+**Acceptance Criteria:** ✅ 모두 충족
 - RLock으로 재고 차감 시 Lock 획득/해제가 정상 동작
 - Lock 획득 실패 시 적절한 예외 발생
 - 로그에서 Lock 획득/해제 확인 가능
 
-**🔍 Checkpoint 1:** Redis Lock 동작 확인 및 로그 검증
+**🔍 Checkpoint 1:** ✅ Redis Lock 동작 확인 및 로그 검증 완료
 
 ---
 
-#### US-2.2: Redis Distributed Lock 통합 테스트
-- [ ] 동시성 시뮬레이션 테스트 작성
+#### US-2.2: Redis Distributed Lock 통합 테스트 ✅
+- [x] 동시성 시뮬레이션 테스트 작성
   - 100개 재고에 100개 동시 요청
   - CountDownLatch + ExecutorService 사용
-- [ ] 재고 정합성 검증
-  - 최종 재고가 정확한지 확인
-- [ ] Success Rate 측정
+- [x] 재고 정합성 검증
+  - 최종 재고가 정확한지 확인 (100 → 0)
+- [x] Success Rate 측정 (100% 달성)
 
-**Acceptance Criteria:**
+**Acceptance Criteria:** ✅ 모두 충족
 - 동시 요청 시 재고가 음수가 되지 않음
-- Success Rate 측정됨 (예상: 100%)
+- Success Rate 측정됨: **100%**
 - 통합 테스트 통과
 
-**✅ Iteration 1 완료 조건:** Redis Distributed Lock이 동시성 문제를 해결함
+**✅ Iteration 1 완료:** Redis Distributed Lock이 동시성 문제를 해결함
 
 ---
 
@@ -156,13 +157,13 @@
 
 ## Sprint 2 Definition of Done
 
-### Iteration 1: Redis Distributed Lock ✅
-- [ ] Redisson 설정 완료
-- [ ] RedisLockStockService 구현
-- [ ] RLock 동작 확인 (로그)
-- [ ] 동시성 통합 테스트 통과 (100% Success Rate 목표)
-- [ ] Checkpoint 1 통과
-- [ ] `iteration-1-summary.md` 생성
+### Iteration 1: Redis Distributed Lock ✅ 완료 (2026-01-24)
+- [x] Redisson 설정 완료
+- [x] RedisLockStockService 구현
+- [x] RLock 동작 확인 (로그)
+- [x] 동시성 통합 테스트 통과 (100% Success Rate 달성)
+- [x] Checkpoint 1 통과
+- [x] `iteration-1-summary.md` 생성
 
 ### Iteration 2: Redis Lua Script ✅
 - [ ] Redis 재고 데이터 구조 설계
