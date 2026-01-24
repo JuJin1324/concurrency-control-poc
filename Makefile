@@ -1,4 +1,4 @@
-.PHONY: up down ps logs clean mysql redis init
+.PHONY: up down ps logs clean mysql redis reset stock
 
 # Docker Compose 실행 (백그라운드)
 up:
@@ -28,8 +28,12 @@ mysql:
 redis:
 	docker compose exec redis redis-cli
 
-# 데이터 리셋 (재고 100개로 복구)
-# 테스트 반복 실행을 위해 사용
+# 데이터 리셋 (테이블 초기화 + 재고 100개)
+# TRUNCATE로 AUTO_INCREMENT도 리셋되어 항상 id=1
 reset:
-	docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "UPDATE stock SET quantity=100 WHERE product_id='PRODUCT-001';"
-	@echo "Stock reset to 100 for PRODUCT-001"
+	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 100);" 2>/dev/null
+	@echo "Stock reset: id=1, PRODUCT-001, quantity=100"
+
+# 재고 데이터 조회
+stock:
+	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "SELECT * FROM stock;" 2>/dev/null
