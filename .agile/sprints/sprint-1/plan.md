@@ -160,18 +160,19 @@
 ### Iteration 4: REST API 구현
 
 #### US-1.8: Stock Controller 구현 (Strategy 선택)
-- [ ] REST API 엔드포인트 작성
+- [x] REST API 엔드포인트 작성
   - `POST /api/stock/decrease?method=pessimistic`
   - `POST /api/stock/decrease?method=optimistic`
   - `GET /api/stock/{id}` (재고 조회)
-- [ ] Request/Response DTO 작성
+- [x] Request/Response DTO 작성
   - StockDecreaseRequest (stockId, amount)
   - StockDecreaseResponse (success, remainingQuantity, message)
-- [ ] Strategy Pattern 적용
-  - `Map<String, StockService>` 또는 `@Qualifier` 사용
+  - StockResponse (id, productId, quantity)
+- [x] Strategy Pattern 적용
+  - `Map<String, StockService>` 사용
   - method 파라미터에 따라 구현체 선택
-- [ ] Controller 유효성 검증 (`@Valid`)
-- [ ] 예외 처리 (GlobalExceptionHandler)
+- [x] Controller 유효성 검증 (`@Valid`)
+- [x] 예외 처리 (GlobalExceptionHandler)
 
 **Acceptance Criteria:**
 - Controller가 DTO만 사용 (Entity 직접 노출 금지)
@@ -181,19 +182,20 @@
 ---
 
 #### US-1.9: API 통합 테스트
-- [ ] MockMvc 기반 API 테스트 작성
+- [x] MockMvc 기반 API 테스트 작성
   - Pessimistic Lock API 테스트
   - Optimistic Lock API 테스트
-- [ ] 재고 조회 API 테스트
-- [ ] 예외 시나리오 테스트
-  - 재고 부족
-  - 존재하지 않는 Stock ID
-  - 잘못된 파라미터
+- [x] 재고 조회 API 테스트
+- [x] 예외 시나리오 테스트
+  - 재고 부족 (409 Conflict)
+  - 존재하지 않는 Stock ID (404 Not Found)
+  - 잘못된 파라미터 (400 Bad Request)
+  - 지원하지 않는 Lock 방식 (400 Bad Request)
 
 **Acceptance Criteria:**
-- 모든 API 엔드포인트가 정상 동작
-- 예외 처리가 적절함
-- MockMvc 테스트 통과
+- 모든 API 엔드포인트가 정상 동작 ✅
+- 예외 처리가 적절함 ✅
+- MockMvc 테스트 통과 ✅ (7개 테스트)
 
 **✅ Iteration 4 완료 조건:** REST API가 완성되고 Postman/cURL로 호출 가능
 
@@ -223,19 +225,19 @@
 - [x] Checkpoint 2 통과
 
 ### Iteration 4: REST API ✅
-- [ ] Stock Controller 구현 (전략 패턴 적용)
-- [ ] Request/Response DTO 작성
-- [ ] method 파라미터로 Service 전략 선택
-- [ ] API 통합 테스트 통과
-- [ ] Postman/cURL로 API 호출 가능
+- [x] Stock Controller 구현 (전략 패턴 적용)
+- [x] Request/Response DTO 작성 (dto 패키지)
+- [x] method 파라미터로 Service 전략 선택
+- [x] API 통합 테스트 통과 (7개 테스트)
+- [x] Postman/cURL로 API 호출 가능
 
 ### 최종 검증
-- [ ] 2가지 전략(Pessimistic, Optimistic) 정상 동작
-- [ ] 동시 요청 시 재고 정합성 보장
-- [ ] ArchUnit 테스트 통과
-  - Controller → Domain Entity 직접 노출 불가
+- [x] 2가지 전략(Pessimistic, Optimistic) 정상 동작
+- [x] 동시 요청 시 재고 정합성 보장
+- [x] ArchUnit 테스트 통과
+  - Controller → Domain Entity 직접 노출 불가 (Exception만 허용)
   - Service → Repository 의존
-- [ ] Service 코드에서 Lock 방식 차이가 명확히 보임
+- [x] Service 코드에서 Lock 방식 차이가 명확히 보임
 - [ ] README 업데이트 (아키텍처 설명 + API 사용 예시)
 
 ---

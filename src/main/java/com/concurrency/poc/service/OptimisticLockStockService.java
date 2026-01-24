@@ -2,6 +2,7 @@ package com.concurrency.poc.service;
 
 import com.concurrency.poc.domain.Stock;
 import com.concurrency.poc.domain.StockNotFoundException;
+import com.concurrency.poc.dto.StockResponse;
 import com.concurrency.poc.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,5 +63,14 @@ public class OptimisticLockStockService implements StockService {
 
         stock.decrease(amount);
         stockRepository.saveAndFlush(stock);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public StockResponse getStock(Long stockId) {
+        Stock stock = stockRepository.findById(stockId)
+                .orElseThrow(() -> new StockNotFoundException(stockId));
+
+        return new StockResponse(stock.getId(), stock.getProductId(), stock.getQuantity());
     }
 }
