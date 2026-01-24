@@ -238,7 +238,7 @@
   - Controller → Domain Entity 직접 노출 불가 (Exception만 허용)
   - Service → Repository 의존
 - [x] Service 코드에서 Lock 방식 차이가 명확히 보임
-- [ ] README 업데이트 (아키텍처 설명 + API 사용 예시)
+- [x] README 업데이트 (아키텍처 설명 + API 사용 예시)
 
 ---
 

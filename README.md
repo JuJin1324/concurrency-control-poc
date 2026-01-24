@@ -79,14 +79,64 @@ make ps
 
 ---
 
-## 📚 구현 예정 기능 (Methods)
+## 📚 구현 기능 (Methods)
 
-| 방법 | 설명 | 특징 |
-|------|------|------|
-| **1. Pessimistic Lock** | `SELECT ... FOR UPDATE` (MySQL) | 강력한 정합성, 성능 낮음 |
-| **2. Optimistic Lock** | `@Version` (JPA) | 충돌 시 재시도, 충돌 적을 때 유리 |
-| **3. Redis Lock** | Redisson Distributed Lock | DB 부하 감소, 스핀락 방지 (Pub/Sub) |
-| **4. Lua Script** | Redis Atomic Execution | **가장 빠름**, 락 획득 과정 없음 |
+| 방법 | 설명 | 특징 | 상태 |
+|------|------|------|------|
+| **1. Pessimistic Lock** | `SELECT ... FOR UPDATE` (MySQL) | 강력한 정합성 (100% Success Rate), Lock 대기 | ✅ 완료 |
+| **2. Optimistic Lock** | `@Version` (JPA) + Retry | 높은 동시성, 충돌 시 재시도 (~96% Success Rate) | ✅ 완료 |
+| **3. Redis Lock** | Redisson Distributed Lock | DB 부하 감소, 스핀락 방지 (Pub/Sub) | 🔜 Sprint 2 |
+| **4. Lua Script** | Redis Atomic Execution | **가장 빠름**, 락 획득 과정 없음 | 🔜 Sprint 2 |
+
+---
+
+## 🔌 API 사용법 (API Usage)
+
+### 재고 차감 API
+
+```bash
+# Pessimistic Lock 방식 (기본값)
+curl -X POST "http://localhost:8080/api/stock/decrease?method=pessimistic" \
+  -H "Content-Type: application/json" \
+  -d '{"stockId": 1, "amount": 10}'
+
+# Optimistic Lock 방식
+curl -X POST "http://localhost:8080/api/stock/decrease?method=optimistic" \
+  -H "Content-Type: application/json" \
+  -d '{"stockId": 1, "amount": 10}'
+```
+
+**Response (성공):**
+```json
+{
+  "success": true,
+  "remainingQuantity": 90,
+  "message": "재고 차감 성공"
+}
+```
+
+### 재고 조회 API
+
+```bash
+curl -X GET "http://localhost:8080/api/stock/1"
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "productId": "PRODUCT-001",
+  "quantity": 100
+}
+```
+
+### 에러 응답
+
+| HTTP Status | 상황 | Response |
+|-------------|------|----------|
+| 404 Not Found | 존재하지 않는 Stock ID | `{"success": false, "message": "Stock not found: 999"}` |
+| 409 Conflict | 재고 부족 | `{"success": false, "message": "재고가 부족합니다..."}` |
+| 400 Bad Request | 잘못된 파라미터 또는 Lock 방식 | `{"success": false, "message": "..."}` |
 
 ---
 
@@ -99,4 +149,10 @@ make ps
 
 ---
 
-**Current Phase:** Sprint 0 (Foundation) Completed ✅
+**Current Phase:** Sprint 1 (DB Lock) Completed ✅
+
+### Sprint 1 구현 내역
+- Pessimistic Lock: `@Lock(PESSIMISTIC_WRITE)` + `SELECT ... FOR UPDATE`
+- Optimistic Lock: `@Version` + Spring Framework 7 네이티브 `@Retryable` (Exponential Backoff)
+- REST API: Strategy Pattern으로 Lock 방식 선택
+- 동시성 테스트: 100개 동시 요청으로 정합성 검증
