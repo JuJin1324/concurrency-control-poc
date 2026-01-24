@@ -30,11 +30,11 @@ flowchart TD
         S0[Sprint 0<br/>플랫폼 엔지니어링<br/>+ 아키텍처 설계]
     end
 
-    subgraph Current["🔄 현재 위치: Phase 1 (진행 예정)"]
+    subgraph Phase1Done["✅ Phase 1-1 (완료)"]
         S1[Sprint 1<br/>DB Lock<br/>Pessimistic + Optimistic]
     end
 
-    subgraph Phase1["Phase 1: 핵심 구현"]
+    subgraph Current["🔄 현재 위치: Phase 1-2"]
         S2[Sprint 2<br/>Redis Lock<br/>Distributed + Lua Script]
     end
 
@@ -51,7 +51,7 @@ flowchart TD
     end
 
     S0 -->|Done| S1
-    S1 -->|4가지 방법 중 2개| S2
+    S1 -->|Done| S2
     S2 -->|4가지 모두 완성| S3
     S3 -->|정량 지표 확보| S4
     S4 -.->|시간 남으면| S5
@@ -67,25 +67,24 @@ flowchart LR
         D3[인프라 시각화]
         D4[Sprint 0<br/>인프라 구현<br/>Docker + Makefile]
         D5[Sprint 0<br/>Spring Boot<br/>스캐폴딩]
+        D6[Sprint 1<br/>DB Lock 구현<br/>Pessimistic + Optimistic]
     end
 
     subgraph InProgress["🔄 진행 중"]
-        
+        T3[Sprint 2<br/>Redis Lock 구현]
     end
 
     subgraph Todo["📋 할 일"]
-        T2[DB Lock 구현]
-        T3[Redis Lock 구현]
-        T4[부하 테스트]
-        T5[문서화/블로그]
+        T4[Sprint 3<br/>부하 테스트]
+        T5[Sprint 4<br/>문서화/블로그]
     end
 
     D1 --> D2
     D2 --> D3
     D3 --> D4
     D4 --> D5
-    D5 --> T2
-    T2 --> T3
+    D5 --> D6
+    D6 --> T3
     T3 --> T4
     T4 --> T5
 ```
@@ -142,7 +141,7 @@ flowchart LR
 
 ### Sprint별 상세
 
-#### Sprint 0: Foundation (현재 진행 중)
+#### Sprint 0: Foundation ✅ 완료
 
 **목표:** 비기능적 요구사항 충족 + 아키텍처 시각화
 
@@ -164,33 +163,36 @@ flowchart LR
 
 ---
 
-#### Sprint 1: DB Lock 구현
+#### Sprint 1: DB Lock 구현 ✅ 완료
 
 **목표:** MySQL 기반 동시성 제어 2가지 구현 및 검증
 
 **산출물:**
-- Stock Domain + 단위 테스트
-- Pessimistic Lock API (`@Lock(PESSIMISTIC_WRITE)`)
-- Optimistic Lock API (`@Version`)
-- 통합 테스트 (동시성 시나리오)
-- Swagger API 문서
+- [x] Stock Domain + 단위 테스트
+- [x] Pessimistic Lock API (`@Lock(PESSIMISTIC_WRITE)`) - 100% Success Rate
+- [x] Optimistic Lock API (`@Version` + Spring Framework 7 @Retryable) - ~96% Success Rate
+- [x] 통합 테스트 (동시성 시나리오)
+- [x] REST API (Strategy Pattern으로 method 파라미터 선택)
 
 **완료 기준:**
-- 100명이 동시에 요청해도 재고가 정확히 차감됨
+- [x] 100명이 동시에 요청해도 재고가 정확히 차감됨
+
+**회고:** `.agile/sprints/sprint-1/retrospective.md` 참조
 
 ---
 
-#### Sprint 2: Redis Lock 구현
+#### Sprint 2: Redis Lock 구현 🔄 진행 중
 
 **목표:** Redis 기반 동시성 제어 2가지 구현 및 검증
 
 **산출물:**
-- Redis Distributed Lock (Redisson)
-- Redis Lua Script (원자적 연산)
-- 4가지 API 모두 통합 테스트
+- [ ] Redis Distributed Lock (Redisson RLock)
+- [ ] Redis Lua Script (원자적 연산)
+- [ ] 4가지 API 모두 통합 테스트
+- [ ] Iteration Summary 파일 (Sprint 1 회고 반영)
 
 **완료 기준:**
-- 4가지 API 모두 Swagger로 호출 가능
+- 4가지 API 모두 method 파라미터로 호출 가능
 - Lua Script가 가장 빠름을 직관적으로 확인
 
 ---
@@ -295,6 +297,5 @@ flowchart LR
 
 ---
 
-**최종 업데이트:** 2026-01-22
-**상태:** Sprint 0 완료 (Foundation 구축 끝) → Sprint 1 대기
---- End of content ---
+**최종 업데이트:** 2026-01-24
+**상태:** Sprint 1 완료 (DB Lock 구현) → Sprint 2 진행 중 (Redis Lock)
