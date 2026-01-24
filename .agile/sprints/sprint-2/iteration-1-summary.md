@@ -106,7 +106,21 @@ Success Rate: 100.0%
 > 이 섹션은 Iteration 완료 후 사용자가 작성합니다.
 
 ### 코드 리뷰 의견
-- (피드백 입력)
+- build.gradle 에 `implementation 'org.springframework.boot:spring-boot-starter-data-redis'` 가 있음에도 불구하고 왜 `redisson` 라이브러리를 추가했는가? 이 redisson 라이브러리의 목적은 무엇인가?
+```
+ * <h3>Pessimistic Lock과의 비교</h3>
+ * <ul>
+ *   <li>Pessimistic: DB Row Lock → DB 부하 증가, 단일 DB에서만 유효</li>
+ *   <li>Redis Lock: 분산 락 → DB 부하 감소, 다중 인스턴스에서 유효</li>
+ * </ul>
+``` 
+- 위의 코드를 보고 분산 락이 뭔지 확실하게 이해하게 됨. 그 전까지 분산 락이 정확히 뭔지 몰랐음. 
+  내가 이해한 바로는 분산된 DB 환경에서 락을 보장해주는 것이 맞는건가?
+- RedisLockStockService 의 경우 Redis Lock 을 사용하므로 인해서 락 획득 후 DB 트랜잭션을 얻기 위해 Spring 의 Transactional 애노테이션이 아닌 직접 transactionTemplate 을 사용한 것 같은데 그로 인해서 try/catch 블록을 Service 레이어에서 직접 사용해야하도록 변경된 거 같은데 이게 맞는지 확인 부탁하고,
+서비스 레이어에서 이러한 트랜잭션 관련 코드를 감출 수 있는 방법이 없을지 및 Spring 혹은 Redisson 라이브러리 등에서 이런 기술 코드를 매끄럽게 숨기기 위한 제공하는 방식이 없는지 확인 바람.
+- LOCK_PREFIX 의 경우 따로 네이밍 컨벤션이 존재하는지 확인 바람.
+- test/java/com.concurrency.poc.service 아래의 테스트를 모두 돌려봤는데 PessimisticLockStockService 가 176ms, RedisLockStockServiceTest 가 353ms, OptimisticLockStockService 가 7sec 92ms 로
+예상 외로 PessimisticLockStockServiceTest 가 가장 우세했는데 너가 볼 때 왜 RedisLock 보다 DB 비관락이 더 빠르게 나왔는지 추론 요청함. 
 
 ### 아키텍처 수정 요청
 - (피드백 입력)
