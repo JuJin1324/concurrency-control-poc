@@ -105,6 +105,20 @@ make show-redis
 
 ---
 
+## 생성 및 수정된 파일
+
+이번 Iteration에서 리뷰가 필요한 주요 파일 목록입니다.
+
+| 구분 | 파일 경로 | 설명 |
+|:---:|:---|:---|
+| **New** | `src/test/java/com/concurrency/poc/service/StockServiceBenchmarkTest.java` | 4가지 방식 성능 측정을 위한 벤치마크 코드 |
+| **New** | `docs/technology/redis-deep-dive.md` | Redis 역사, 아키텍처, 격리 수준 심층 분석 문서 |
+| **Mod** | `src/main/java/com/concurrency/poc/controller/StockController.java` | 4가지 방식을 통합 호출하도록 API 확장 |
+| **Mod** | `src/test/java/com/concurrency/poc/controller/StockControllerTest.java` | 통합된 4가지 방식에 대한 API 테스트 케이스 추가 |
+| **Mod** | `Makefile` | `reset-db`, `show-redis` 등 직관적인 테스트 명령어 개선 |
+
+---
+
 ## 4. 최종 성능 비교 (Benchmark Result)
 
 ### 테스트 환경 및 방법 (Methodology)
