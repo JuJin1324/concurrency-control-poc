@@ -35,14 +35,53 @@ class StockControllerTest {
 
     private Stock stock;
 
+    @Autowired
+    private com.concurrency.poc.service.LuaScriptStockService luaScriptStockService;
+
     @BeforeEach
     void setUp() {
         stock = stockRepository.save(new Stock("PRODUCT-001", 100));
+        // Lua Script 테스트를 위해 Redis 동기화
+        luaScriptStockService.syncStockToRedis(stock.getId());
     }
 
     @AfterEach
     void tearDown() {
         stockRepository.deleteAll();
+    }
+
+    @Test
+    @DisplayName("POST /api/stock/decrease - Redis Distributed Lock으로 재고 차감 성공")
+    void decreaseStock_redisLock_success() throws Exception {
+        Map<String, Object> request = Map.of(
+                "stockId", stock.getId(),
+                "amount", 10
+        );
+
+        mockMvc.perform(post("/api/stock/decrease")
+                        .param("method", "redis-lock")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.remainingQuantity").value(90));
+    }
+
+    @Test
+    @DisplayName("POST /api/stock/decrease - Redis Lua Script로 재고 차감 성공")
+    void decreaseStock_luaScript_success() throws Exception {
+        Map<String, Object> request = Map.of(
+                "stockId", stock.getId(),
+                "amount", 10
+        );
+
+        mockMvc.perform(post("/api/stock/decrease")
+                        .param("method", "lua-script")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.remainingQuantity").value(90));
     }
 
     @Test

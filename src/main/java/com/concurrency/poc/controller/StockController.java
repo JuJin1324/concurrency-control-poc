@@ -51,11 +51,17 @@ public class StockController {
     }
 
     private StockService getStockService(String method) {
-        String beanName = method.toLowerCase() + "LockStockService";
-        StockService service = stockServiceMap.get(beanName);
+        String beanName = switch (method.toLowerCase()) {
+            case "pessimistic" -> "pessimisticLockStockService";
+            case "optimistic" -> "optimisticLockStockService";
+            case "redis-lock" -> "redisLockStockService";
+            case "lua-script" -> "luaScriptStockService";
+            default -> throw new IllegalArgumentException("지원하지 않는 Lock 방식입니다: " + method);
+        };
 
+        StockService service = stockServiceMap.get(beanName);
         if (service == null) {
-            throw new IllegalArgumentException("지원하지 않는 Lock 방식입니다: " + method);
+            throw new IllegalArgumentException("해당 서비스를 찾을 수 없습니다: " + beanName);
         }
 
         return service;

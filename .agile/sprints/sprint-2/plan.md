@@ -126,14 +126,14 @@
 
 ---
 
-### Iteration 3: REST API 통합 및 4가지 방법 비교
+### Iteration 3: REST API 통합 및 4가지 방법 비교 ✅ 완료
 
-#### US-2.6: StockController 확장
-- [ ] REST API 확장
+#### US-2.6: StockController 확장 ✅
+- [x] REST API 확장
   - `POST /api/stock/decrease?method=redis-lock`
   - `POST /api/stock/decrease?method=lua-script`
-- [ ] StockService Map에 새로운 구현체 등록
-- [ ] API 통합 테스트 추가
+- [x] StockService Map에 새로운 구현체 등록
+- [x] API 통합 테스트 추가
 
 **Acceptance Criteria:**
 - 4가지 method 파라미터 모두 정상 동작
@@ -141,17 +141,30 @@
 
 ---
 
-#### US-2.7: 4가지 방법 예비 비교 테스트
-- [ ] 동일 조건에서 4가지 방법 비교
+#### US-2.8: Redis 심층 탐구 및 아키텍처 문서화 (New) ✅
+- [x] 별도 MD 파일 작성 (`docs/technology/redis-deep-dive.md`)
+- [x] Redis의 역사와 목적 탐구
+- [x] Single Thread 아키텍처와 원자성(Atomicity)의 관계 정리
+- [x] 프로젝트 적용 분석:
+  - Distributed Lock (Redisson)의 원리
+  - Lua Script의 원리 (Atomic Operation)
+
+**Acceptance Criteria:**
+- Redis의 특성과 프로젝트 활용 방식이 논리적으로 정리된 문서 생성
+
+---
+
+#### US-2.7: 4가지 방법 예비 비교 테스트 ✅
+- [x] 동일 조건에서 4가지 방법 비교
   - 100개 재고, 100개 동시 요청
   - 각 방법별 Success Rate, 처리 시간 측정
-- [ ] 비교 결과 문서화 (간단한 표)
+- [x] 비교 결과 문서화 (간단한 표)
 
 **Acceptance Criteria:**
 - 4가지 방법 모두 동일 조건에서 테스트됨
 - 예상 순위: Lua Script > Redis Lock > Optimistic > Pessimistic
 
-**✅ Iteration 3 완료 조건:** 4가지 방법 모두 API로 호출 가능하고 예비 비교 완료
+**✅ Iteration 3 완료:** 4가지 방법 모두 API로 호출 가능하고, 심층 문서 및 성능 비교 완료
 
 ---
 
@@ -173,17 +186,18 @@
 - [x] Checkpoint 2 통과
 - [x] `iteration-2-summary.md` 생성
 
-### Iteration 3: API 통합 및 비교 ✅
-- [ ] REST API 확장 (method=redis-lock, lua-script)
-- [ ] 4가지 방법 예비 비교 테스트
-- [ ] API 통합 테스트 통과
-- [ ] `iteration-3-summary.md` 생성
+### Iteration 3: API 통합 및 비교 ✅ 완료 (2026-01-26)
+- [x] REST API 확장 (method=redis-lock, lua-script)
+- [x] 4가지 방법 예비 비교 테스트
+- [x] API 통합 테스트 통과
+- [x] `iteration-3-summary.md` 생성
+- [x] Redis 심층 탐구 문서(`redis-deep-dive.md`) 작성
 
 ### 최종 검증
-- [ ] 4가지 전략 모두 정상 동작
-- [ ] 동시 요청 시 재고 정합성 보장
+- [x] 4가지 전략 모두 정상 동작
+- [x] 동시 요청 시 재고 정합성 보장
 - [ ] ArchUnit 테스트 통과
-- [ ] README 업데이트 (Redis 방법 추가)
+- [x] README 업데이트 (Redis 방법 추가)
 
 ---
 
