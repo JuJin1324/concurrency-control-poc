@@ -66,13 +66,13 @@
 
 ---
 
-### Iteration 2: Redis Lua Script 구현
+### Iteration 2: Redis Lua Script 구현 ✅ 완료
 
-#### US-2.3: Redis에 재고 데이터 저장 구조 설계
-- [ ] Redis 재고 데이터 구조 결정
+#### US-2.3: Redis에 재고 데이터 저장 구조 설계 ✅
+- [x] Redis 재고 데이터 구조 결정
   - Key: `stock:{stockId}` → Value: `quantity` (String)
   - 또는 Hash 구조 사용 여부 결정
-- [ ] 초기 재고 데이터 Redis에 저장하는 로직 구현
+- [x] 초기 재고 데이터 Redis에 저장하는 로직 구현
   - 애플리케이션 시작 시 MySQL → Redis 동기화
   - 또는 API를 통한 초기화
 
@@ -82,8 +82,8 @@
 
 ---
 
-#### US-2.4: Lua Script 작성 및 실행
-- [ ] Lua Script 작성 (재고 차감 원자적 연산)
+#### US-2.4: Lua Script 작성 및 실행 ✅
+- [x] Lua Script 작성 (재고 차감 원자적 연산)
   ```lua
   -- 재고 조회
   local stock = tonumber(redis.call('GET', KEYS[1]))
@@ -94,10 +94,10 @@
   -- 재고 차감
   return redis.call('DECRBY', KEYS[1], ARGV[1])
   ```
-- [ ] LuaScriptStockService 구현 (StockService 구현체)
+- [x] LuaScriptStockService 구현 (StockService 구현체)
   - RedisTemplate의 `execute()` 사용
   - Script 로드 및 캐싱
-- [ ] MySQL 동기화 전략 결정
+- [x] MySQL 동기화 전략 결정
   - 옵션 1: 동기 (매 요청마다 MySQL 업데이트)
   - 옵션 2: 비동기 (주기적 동기화)
   - 옵션 3: 동기화 안 함 (Redis를 Source of Truth로)
@@ -107,22 +107,22 @@
 - 재고 부족 시 적절한 응답 반환
 - Lock 없이도 정합성 보장
 
-**🔍 Checkpoint 2:** Lua Script 동작 확인 및 원자성 검증
+**🔍 Checkpoint 2:** ✅ Lua Script 동작 확인 및 원자성 검증 완료
 
 ---
 
-#### US-2.5: Lua Script 통합 테스트
-- [ ] 동시성 시뮬레이션 테스트 작성
+#### US-2.5: Lua Script 통합 테스트 ✅
+- [x] 동시성 시뮬레이션 테스트 작성
   - 100개 재고에 100개 동시 요청
-- [ ] 재고 정합성 검증
-- [ ] Success Rate 및 성능 측정 (예상: 가장 빠름)
+- [x] 재고 정합성 검증
+- [x] Success Rate 및 성능 측정 (예상: 가장 빠름)
 
 **Acceptance Criteria:**
 - 동시 요청 시 재고가 음수가 되지 않음
 - Success Rate 100%
 - DB Lock보다 빠른 처리 속도
 
-**✅ Iteration 2 완료 조건:** Lua Script가 정상 동작하고 가장 빠름
+**✅ Iteration 2 완료:** Lua Script가 정상 동작하고 가장 빠름
 
 ---
 
@@ -165,13 +165,13 @@
 - [x] Checkpoint 1 통과
 - [x] `iteration-1-summary.md` 생성
 
-### Iteration 2: Redis Lua Script ✅
-- [ ] Redis 재고 데이터 구조 설계
-- [ ] Lua Script 작성 및 실행
-- [ ] LuaScriptStockService 구현
-- [ ] 동시성 통합 테스트 통과
-- [ ] Checkpoint 2 통과
-- [ ] `iteration-2-summary.md` 생성
+### Iteration 2: Redis Lua Script ✅ 완료 (2026-01-26)
+- [x] Redis 재고 데이터 구조 설계
+- [x] Lua Script 작성 및 실행
+- [x] LuaScriptStockService 구현
+- [x] 동시성 통합 테스트 통과
+- [x] Checkpoint 2 통과
+- [x] `iteration-2-summary.md` 생성
 
 ### Iteration 3: API 통합 및 비교 ✅
 - [ ] REST API 확장 (method=redis-lock, lua-script)
