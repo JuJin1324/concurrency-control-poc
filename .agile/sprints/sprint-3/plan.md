@@ -84,12 +84,12 @@
 ### Iteration 1: k6 개념 학습 및 환경 설정
 
 #### US-3.1: k6 개념 및 역사 학습 (Sprint 2 Action Item 반영)
-- [ ] k6 기술 문서 작성 (`docs/technology/k6-overview.md`)
+- [x] k6 기술 문서 작성 (`docs/technology/k6-overview.md`)
   - k6가 무엇이고 왜 만들어졌는지
   - k6의 핵심 철학과 다른 부하 테스트 도구와의 차이점 (JMeter, Gatling, Locust)
   - VU (Virtual User), RPS (Request Per Second) 개념
   - Threshold, Metric, Check 개념
-- [ ] 성능 측정 방법론 학습 및 문서화
+- [x] 성능 측정 방법론 학습 및 문서화
   - 성능 측정의 핵심 지표 (TPS, Latency, Percentile)
   - 부하 테스트의 종류 (Load Test, Stress Test, Spike Test, Soak Test)
   - 공정한 비교를 위한 테스트 환경 설정
@@ -105,14 +105,14 @@
 ---
 
 #### US-3.2: k6 설치 및 기본 사용법 실습
-- [ ] k6 설치
+- [x] k6 설치
   - macOS: `brew install k6`
   - 또는 Docker 이미지 사용
-- [ ] 간단한 예제로 실습
+- [x] 간단한 예제로 실습
   - Hello World 시나리오 작성 (JavaScript)
   - VU 설정 및 실행
   - 결과 확인 (stdout 출력)
-- [ ] k6 스크립트 템플릿 작성
+- [x] k6 스크립트 템플릿 작성
   - 재사용 가능한 기본 템플릿
   - 공통 설정 (threshold, stages)
 
@@ -326,12 +326,12 @@
 - [x] `sprint-start-summary.md` 생성
 
 ### Iteration 1: k6 개념 학습 및 환경 설정 ✅
-- [ ] k6-overview.md 문서 작성 (Redis 문서 수준)
-- [ ] 성능 측정 방법론 정리
-- [ ] k6 설치 및 실습 완료
-- [ ] k6 스크립트 템플릿 작성
-- [ ] Checkpoint 1 통과
-- [ ] `iteration-1-summary.md` 생성
+- [x] k6-overview.md 문서 작성 (Redis 문서 수준)
+- [x] 성능 측정 방법론 정리
+- [x] k6 설치 및 실습 완료
+- [x] k6 스크립트 템플릿 작성
+- [x] Checkpoint 1 통과
+- [x] `iteration-1-summary.md` 생성
 
 ### Iteration 2: 부하 테스트 환경 구축 및 k6 시나리오 작성 ✅
 - [ ] 애플리케이션 Dockerfile 작성 완료
