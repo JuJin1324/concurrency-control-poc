@@ -242,16 +242,16 @@
 ### Iteration 3: 전체 방법 부하 테스트 및 결과 분석
 
 #### US-3.7: 4가지 방법 전체 부하 테스트
-- [ ] 각 방법별 3회 이상 반복 측정
+- [x] 각 방법별 3회 이상 반복 측정
   - Pessimistic Lock
   - Optimistic Lock
   - Redis Lock
   - Lua Script
-- [ ] 테스트 시나리오 다양화
+- [x] 테스트 시나리오 다양화
   - 시나리오 1: 재고 100개, 동시 요청 100개
   - 시나리오 2: 재고 100개, 동시 요청 1000개
   - (선택) 시나리오 3: 장시간 안정성 테스트 (5분간 지속 트래픽)
-- [ ] 시스템 리소스 모니터링
+- [x] 시스템 리소스 모니터링
   - CPU/Memory 사용률 기록
   - Docker stats 모니터링
 
@@ -265,7 +265,7 @@
 ---
 
 #### US-3.8: 결과 분석 및 비교표 작성
-- [ ] 성능 비교표 작성 (Markdown)
+- [x] 성능 비교표 작성 (Markdown)
   ```markdown
   | Method            | TPS   | p95 Latency | p99 Latency | Success Rate | Lock Contention |
   |-------------------|-------|-------------|-------------|--------------|-----------------|
@@ -274,11 +274,11 @@
   | Redis Lock        | X     | Xms         | Xms         | X%           | Medium          |
   | Lua Script        | X     | Xms         | Xms         | X%           | None            |
   ```
-- [ ] 그래프 생성 (선택)
+- [x] 그래프 생성 (선택)
   - TPS 비교 막대 그래프
   - Latency 분포 그래프 (p50/p95/p99)
   - Success Rate 비교
-- [ ] 장단점 분석 문서 작성
+- [x] 장단점 분석 문서 작성
   - 각 방법의 Trade-off 정리
   - 성능 차이의 원인 분석
   - 예상 결과 vs 실제 결과 비교
@@ -293,12 +293,12 @@
 ---
 
 #### US-3.9: 성능 리포트 및 실무 적용 가이드 작성
-- [ ] `docs/performance-test-result.md` 작성
+- [x] `docs/performance-test-result.md` 작성
   - 테스트 환경 명세
   - 4가지 방법 성능 비교 결과
   - 그래프 및 비교표 포함
   - 결론 및 권장사항
-- [ ] 실무 적용 가이드 작성 (`docs/practical-guide.md`)
+- [x] 실무 적용 가이드 작성 (`docs/practical-guide.md`)
   - "어떤 상황에 어떤 방법을 쓸 것인가?"
   - 각 방법의 적합한 사용 사례
   - 주의사항 및 함정
@@ -345,22 +345,22 @@
 - [x] `iteration-2-summary.md` 생성
 
 ### Iteration 3: 전체 방법 부하 테스트 및 결과 분석 ✅
-- [ ] 4가지 방법 전체 부하 테스트 완료
-- [ ] 정량 지표 측정 (TPS, Latency, Success Rate)
-- [ ] 시스템 리소스 모니터링 완료
-- [ ] 성능 비교표 작성
-- [ ] 장단점 분석 문서 작성
-- [ ] 성능 리포트 문서 작성 (`performance-test-result.md`)
-- [ ] 실무 적용 가이드 작성 (`practical-guide.md`)
-- [ ] Checkpoint 3-1, 3-2 통과
-- [ ] `iteration-3-summary.md` 생성
+- [x] 4가지 방법 전체 부하 테스트 완료
+- [x] 정량 지표 측정 (TPS, Latency, Success Rate)
+- [x] 시스템 리소스 모니터링 완료
+- [x] 성능 비교표 작성
+- [x] 장단점 분석 문서 작성
+- [x] 성능 리포트 문서 작성 (`performance-test-result.md`)
+- [x] 실무 적용 가이드 작성 (`practical-guide.md`)
+- [x] Checkpoint 3-1, 3-2 통과
+- [x] `iteration-3-summary.md` 생성
 
 ### 최종 검증
-- [ ] 4개 k6 스크립트 모두 정상 동작
-- [ ] 정량 지표 측정 완료 (3회 이상 반복)
-- [ ] 성능 비교 문서 완성
-- [ ] 실무 적용 가이드 완성
-- [ ] "어떤 상황에 어떤 방법을 쓸 것인가" 명확히 정리됨
+- [x] 4개 k6 스크립트 모두 정상 동작
+- [x] 정량 지표 측정 완료 (3회 이상 반복)
+- [x] 성능 비교 문서 완성
+- [x] 실무 적용 가이드 완성
+- [x] "어떤 상황에 어떤 방법을 쓸 것인가" 명확히 정리됨
 
 ---
 
