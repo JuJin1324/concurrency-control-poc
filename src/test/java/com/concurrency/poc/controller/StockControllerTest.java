@@ -2,6 +2,8 @@ package com.concurrency.poc.controller;
 
 import com.concurrency.poc.domain.Stock;
 import com.concurrency.poc.repository.StockRepository;
+import com.concurrency.poc.service.LuaScriptStockService;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +38,7 @@ class StockControllerTest {
     private Stock stock;
 
     @Autowired
-    private com.concurrency.poc.service.LuaScriptStockService luaScriptStockService;
+    private LuaScriptStockService luaScriptStockService;
 
     @BeforeEach
     void setUp() {

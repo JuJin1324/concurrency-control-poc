@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SpringBootTest
 @ActiveProfiles("test") // test 프로파일 사용 (필요 시)
-public class StockServiceBenchmarkTest {
+class StockServiceBenchmarkTest {
 
     @Autowired
     private Map<String, StockService> stockServiceMap;

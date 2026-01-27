@@ -1,6 +1,9 @@
 package com.concurrency.poc.service;
 
 import com.concurrency.poc.domain.Stock;
+import com.concurrency.poc.fixtures.ConcurrencyTestSupport;
+import com.concurrency.poc.fixtures.ConcurrencyTestSupport.ConcurrencyTestConfig;
+import com.concurrency.poc.fixtures.ConcurrencyTestSupport.ConcurrencyTestResult;
 import com.concurrency.poc.repository.StockRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,11 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import static com.concurrency.poc.fixtures.ConcurrencyTestSupport.DEFAULT_DECREASE_AMOUNT;
+import static com.concurrency.poc.fixtures.StockTestFixtures.DEFAULT_QUANTITY;
+import static com.concurrency.poc.fixtures.StockTestFixtures.saveDefaultStock;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -31,21 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 class OptimisticLockStockServiceTest {
 
-    /**
-     * 초기 재고 수량 = 동시 요청 수
-     * Retry 로직이 있으므로 대부분 성공해야 함
-     */
-    private static final int INITIAL_STOCK_QUANTITY = 100;
-    private static final int CONCURRENT_REQUEST_COUNT = INITIAL_STOCK_QUANTITY;
-
-    /**
-     * 동시성 수준을 결정하는 스레드 풀 크기
-     * Optimistic Lock은 충돌이 잦으므로 적절한 동시성 필요
-     */
-    private static final int THREAD_POOL_SIZE = 32;
-
-    private static final int DECREASE_AMOUNT_PER_REQUEST = 1;
-
     @Autowired
     private OptimisticLockStockService stockService;
 
@@ -56,7 +42,7 @@ class OptimisticLockStockServiceTest {
 
     @BeforeEach
     void setUp() {
-        stock = stockRepository.save(new Stock("PRODUCT-001", INITIAL_STOCK_QUANTITY));
+        stock = saveDefaultStock(stockRepository);
     }
 
     @AfterEach
@@ -68,31 +54,17 @@ class OptimisticLockStockServiceTest {
     @DisplayName("Optimistic Lock: 동시 요청 시 재고 정합성이 보장되어야 한다")
     void decreaseStock_withConcurrentRequests_shouldMaintainDataIntegrity() throws InterruptedException {
         // given
-        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-        CountDownLatch latch = new CountDownLatch(CONCURRENT_REQUEST_COUNT);
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failCount = new AtomicInteger(0);
+        ConcurrencyTestConfig config = ConcurrencyTestConfig.withDefaults();
 
         // when
-        for (int i = 0; i < CONCURRENT_REQUEST_COUNT; i++) {
-            executorService.submit(() -> {
-                try {
-                    stockService.decreaseStock(stock.getId(), DECREASE_AMOUNT_PER_REQUEST);
-                    successCount.incrementAndGet();
-                } catch (Exception e) {
-                    failCount.incrementAndGet();
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await();
-        executorService.shutdown();
+        ConcurrencyTestResult result = ConcurrencyTestSupport.executeConcurrentRequests(
+            () -> stockService.decreaseStock(stock.getId(), DEFAULT_DECREASE_AMOUNT),
+            config
+        );
 
         // then
         Stock updatedStock = stockRepository.findById(stock.getId()).orElseThrow();
-        int expectedRemainingStock = INITIAL_STOCK_QUANTITY - (successCount.get() * DECREASE_AMOUNT_PER_REQUEST);
+        int expectedRemainingStock = DEFAULT_QUANTITY - (result.successCount() * DEFAULT_DECREASE_AMOUNT);
 
         assertThat(updatedStock.getQuantity())
                 .as("최종 재고는 (초기 재고 - 성공한 차감량)이어야 한다")
@@ -102,9 +74,8 @@ class OptimisticLockStockServiceTest {
                 .as("재고는 음수가 되면 안 된다")
                 .isGreaterThanOrEqualTo(0);
 
-        System.out.printf("%n=== Optimistic Lock 테스트 결과 ===%n");
-        System.out.printf("성공: %d, 실패: %d%n", successCount.get(), failCount.get());
-        System.out.printf("Success Rate: %.1f%%%n", (successCount.get() * 100.0 / CONCURRENT_REQUEST_COUNT));
+        // 결과 출력
+        result.printResult("Optimistic Lock");
         System.out.printf("최종 재고: %d%n", updatedStock.getQuantity());
     }
 }
