@@ -29,6 +29,15 @@ docker/
 
 ---
 
+### 3. 프로젝트 정합성 검증 (Alignment Check)
+
+**목표:** 초기 기획(`how-diagram.md`, `brainstorm.md`)과 실제 수행(`agile/sprints`) 간의 괴리 검증
+- [ ] Sprint 0 ~ 3의 수행 내용이 `how-diagram.md`의 목표(Why)와 일치하는지 전수 검사
+- [ ] 특히 "대규모 트래픽", "정량 지표" 등 핵심 KPI 달성 여부 확인
+- [ ] Sprint 4 (문서화) 진행 시 최종 점검
+
+---
+
 ### 진행 방법
 
 - [ ] AI와 함께 상의해서 진행
