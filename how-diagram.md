@@ -34,16 +34,16 @@ flowchart TD
         S1[Sprint 1<br/>DB Lock<br/>Pessimistic + Optimistic]
     end
 
-    subgraph Current["🔄 현재 위치: Phase 1-2"]
+    subgraph Phase1Done2["✅ Phase 1-2 (완료)"]
         S2[Sprint 2<br/>Redis Lock<br/>Distributed + Lua Script]
     end
 
-    subgraph Phase2["Phase 2: 검증"]
-        S3[Sprint 3<br/>부하 테스트<br/>+ 성능 비교]
+    subgraph Phase2Done["✅ Phase 2 (완료)"]
+        S3[Sprint 3<br/>부하 테스트<br/>High/Extreme Load]
     end
 
-    subgraph Phase3["Phase 3: 완성"]
-        S4[Sprint 4<br/>문서화<br/>+ 블로그]
+    subgraph Current["🔄 현재 위치: Phase 3"]
+        S4[Sprint 4<br/>최종 완성<br/>Hell Test + 문서화]
     end
 
     subgraph Deferred["⏸️ Deferred (선택)"]
@@ -52,8 +52,8 @@ flowchart TD
 
     S0 -->|Done| S1
     S1 -->|Done| S2
-    S2 -->|4가지 모두 완성| S3
-    S3 -->|정량 지표 확보| S4
+    S2 -->|Done| S3
+    S3 -->|Done| S4
     S4 -.->|시간 남으면| S5
 ```
 
@@ -68,15 +68,16 @@ flowchart LR
         D4[Sprint 0<br/>인프라 구현<br/>Docker + Makefile]
         D5[Sprint 0<br/>Spring Boot<br/>스캐폴딩]
         D6[Sprint 1<br/>DB Lock 구현<br/>Pessimistic + Optimistic]
+        D7[Sprint 2<br/>Redis Lock 구현]
+        D8[Sprint 3<br/>부하 테스트<br/>Max TPS 측정]
     end
 
     subgraph InProgress["🔄 진행 중"]
-        T3[Sprint 2<br/>Redis Lock 구현]
+        T5[Sprint 4<br/>Hell Test + 문서화]
     end
 
     subgraph Todo["📋 할 일"]
-        T4[Sprint 3<br/>부하 테스트]
-        T5[Sprint 4<br/>문서화/블로그]
+        T6[블로그 포스팅]
     end
 
     D1 --> D2
@@ -84,9 +85,10 @@ flowchart LR
     D3 --> D4
     D4 --> D5
     D5 --> D6
-    D6 --> T3
-    T3 --> T4
-    T4 --> T5
+    D6 --> D7
+    D7 --> D8
+    D8 --> T5
+    T5 --> T6
 ```
 
 ---
@@ -197,26 +199,32 @@ flowchart LR
 
 ---
 
-#### Sprint 3: 부하 테스트 + 성능 비교
+#### Sprint 3: 부하 테스트 + 성능 비교 ✅ 완료
 
 **목표:** k6 부하 테스트로 정량 지표 측정 및 비교
 
 **산출물:**
-- k6 스크립트 4개
-- 성능 비교 표 (TPS, Latency, Success Rate)
-- 트레이드오프 분석 문서
-- 실무 적용 가이드
+- [x] k6 스크립트 4개 + Stress Test 스크립트
+- [x] 성능 비교 표 (TPS, Latency, Success Rate)
+- [x] 트레이드오프 분석 문서 (`docs/performance-test-result.md`)
+- [x] 실무 적용 가이드 (`docs/practical-guide.md`)
 
 **완료 기준:**
-- "어떤 상황에 어떤 방법을 쓸 것인가" 명확히 정리됨
+- [x] "어떤 상황에 어떤 방법을 쓸 것인가" 명확히 정리됨
 
 ---
 
-#### Sprint 4: 문서화 + 블로그
+#### Sprint 4: 최종 완성 + 문서화
 
-**목표:** 프로젝트 완성 및 외부 공개 준비
+**목표:** 극한 경합(Hell Test) 검증 후 프로젝트 완성 및 외부 공개 준비
+
+**Iteration 구조:**
+1. **Hell Test:** 재고 100개 vs 1만 명 (극한 경합) 검증
+2. **문서화:** README 완성 및 재현 가이드 작성
+3. **블로그:** 기술 블로그 포스팅 초안 작성
 
 **산출물:**
+- Hell Test 결과 리포트 (추가)
 - README.md 완성
 - 블로그 포스팅
 - 온보딩 가이드
@@ -233,21 +241,21 @@ flowchart LR
 
 #### 성능 지표
 
-| 지표 | 측정 방법 | 목표 |
-|------|----------|------|
-| **TPS** | k6 부하 테스트 | 4가지 방법별 측정 |
-| **Latency** | p50, p95, p99 | 4가지 방법별 측정 |
-| **Success Rate** | 데이터 정합성 | 재고가 음수가 되지 않음 |
-| **동시 사용자** | 100, 1000, 10000 VU | 시나리오별 측정 |
+| 지표 | 측정 방법 | 목표 | 달성 결과 (v2) |
+|------|----------|------|--------------|
+| **TPS** | k6 부하 테스트 | 4가지 방법별 측정 | **Max 2,000+** (M1 Max) |
+| **Latency** | p50, p95, p99 | 4가지 방법별 측정 | **Optimistic 3.35ms** (Best) |
+| **Success Rate** | 데이터 정합성 | 재고가 음수가 되지 않음 | **100% (모두 통과)** |
+| **동시 사용자** | 100, 1000, 10000 VU | 시나리오별 측정 | **Max 10,000 VU** (Stress Test) |
 
-#### 예상 결과 (가설)
+#### 예상 결과 (가설) vs 실제 (Actual)
 
-| Method | TPS | p95 Latency | Success Rate | 적합한 상황 |
-|--------|-----|-------------|--------------|------------|
-| Pessimistic Lock | ~1,200 | ~85ms | 100% | 강한 정합성 필요 |
-| Optimistic Lock | ~3,500 | ~45ms | ~92% | 충돌 적고 재시도 가능 |
-| Redis Lock | ~5,000 | ~30ms | 100% | 분산 환경, 빠른 처리 |
-| Lua Script | ~8,000 | ~20ms | 100% | 초고속, DB 동기화 불필요 |
+| Method | 예상 TPS | 실제 p95 | 결과 분석 |
+|--------|-----|-------------|--------------|
+| Pessimistic | ~1,200 | 3.52ms | **매우 안정적 (예상 적중)** |
+| Optimistic | ~3,500 | 3.35ms | **Best Latency (예상 상회)** |
+| Redis Lock | ~5,000 | 6.52ms | **병목 발생 (예상 빗나감)** |
+| Lua Script | ~8,000 | 3.76ms | **Best Efficiency (예상 적중)** |
 
 #### 완성도 지표
 
