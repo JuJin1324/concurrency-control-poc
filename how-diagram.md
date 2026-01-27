@@ -122,6 +122,7 @@ flowchart LR
 
 | 항목 | 결정 조건 |
 |------|----------|
+| 심화 연구 (실무 도입 사례) | Sprint 4 완료 후 핵심 성과 정리 시 |
 | 모니터링 (Prometheus + Grafana) | Sprint 4 완료 후 시간 여유 있으면 |
 | 조회 최적화 PoC | Phase 2 프로젝트로 분리 |
 | Kafka 비동기 처리 | Phase 2 프로젝트로 분리 |
@@ -138,8 +139,8 @@ flowchart LR
 | **Sprint 1** | Phase 1 | DB Lock 구현 | Stock Domain, Pessimistic/Optimistic API |
 | **Sprint 2** | Phase 1 | Redis Lock 구현 | Redis Lock, Lua Script API |
 | **Sprint 3** | Phase 2 | 부하 테스트 + 성능 비교 | k6 스크립트 4개, 성능 비교 표 |
-| **Sprint 4** | Phase 3 | 문서화 + 블로그 | README, 블로그 포스팅, 재현 가이드 |
-| **Sprint 5** | Deferred | (선택) 확장 | 모니터링 또는 추가 PoC |
+| **Sprint 4** | Phase 3 | 최종 완성 + 문서화 | Hell Test 결과, README, 블로그 |
+| **Sprint 5** | Deep Dive | 심화 연구 (실무 도입 사례) | 방식별 실제 사례 분석 리포트 |
 
 ### Sprint별 상세
 
@@ -232,6 +233,25 @@ flowchart LR
 **완료 기준:**
 - 다른 사람이 README만 보고 프로젝트 실행 가능
 - 블로그 글을 읽고 4가지 방법의 차이 이해 가능
+
+---
+
+#### Sprint 5: 심화 연구 (실무 도입 사례)
+
+**목표:** 각 동시성 제어 방식의 실제 현업 도입 사례 연구 및 분석
+
+**내용:**
+- **Pessimistic Lock:** 금융권 계좌 이체, 재고 관리 시스템 등 정합성이 극도로 중요한 사례 조사
+- **Optimistic Lock:** 위키 편집, 자원 경합이 낮은 일반 웹 서비스 사례 조사
+- **Redis Lock:** 분산 환경에서의 분산 락 적용 사례 (e.g. 배민 선착순 쿠폰, 토스 주문 결제)
+- **Lua Script:** 초고부하 선착순 이벤트 처리 사례 (e.g. 쿠폰 발급, 티켓팅)
+
+**산출물:**
+- 기술 블로그 심화편 (Case Study)
+- 방식별 대표 사용 사례 정리 리포트
+
+**완료 기준:**
+- "네카라쿠배에서는 이럴 때 이 기술을 쓴다"를 실제 사례와 함께 설명 가능
 
 ---
 
