@@ -130,36 +130,36 @@
 #### US-3.3: 부하 테스트 환경 구축 (Docker 컨테이너화 + 리소스 제한)
 
 **Phase 1: 애플리케이션 컨테이너화**
-- [ ] Dockerfile 작성
+- [x] Dockerfile 작성
   - Base Image: `eclipse-temurin:21-jre-alpine`
   - JAR 파일 복사 및 실행 설정
   - EXPOSE 8080
-- [ ] .dockerignore 작성
+- [x] .dockerignore 작성
   - build/, .gradle/, .git/ 제외
-- [ ] Gradle 빌드 스크립트 확인
+- [x] Gradle 빌드 스크립트 확인
   - `./gradlew bootJar` 명령 확인
 
 **Phase 2: docker-compose.yml 확장**
-- [ ] app 서비스 추가
+- [x] app 서비스 추가
   - Spring Boot 애플리케이션 컨테이너 정의
   - 환경 변수 설정 (SPRING_DATASOURCE_URL, SPRING_DATA_REDIS_HOST)
   - 포트 매핑: 8080:8080
   - depends_on 설정 (mysql, redis 헬스체크 의존)
-- [ ] 리소스 제한 설정 (deploy.resources)
+- [x] 리소스 제한 설정 (deploy.resources)
   - **app:** CPU 2코어, Memory 2GB (limits), CPU 1코어, Memory 1GB (reservations)
   - **mysql:** CPU 2코어, Memory 1GB (limits), CPU 1코어, Memory 512MB (reservations)
   - **redis:** CPU 1코어, Memory 512MB (limits), CPU 0.5코어, Memory 256MB (reservations)
-- [ ] 헬스체크 설정 (app 서비스)
+- [x] 헬스체크 설정 (app 서비스)
   - HTTP GET /actuator/health (Spring Boot Actuator 사용)
   - interval: 10s, timeout: 5s, retries: 3
 
 **Phase 3: Makefile 업데이트**
-- [ ] `make build` 명령 추가
+- [x] `make build` 명령 추가
   - `./gradlew clean bootJar` 실행
   - `docker-compose build` 실행
-- [ ] `make up` 명령 수정
+- [x] `make up` 명령 수정
   - app 포함하여 전체 스택 실행
-- [ ] `make logs` 명령 추가
+- [x] `make logs` 명령 추가
   - `docker-compose logs -f app` 실행
 
 **Acceptance Criteria:**
@@ -174,15 +174,15 @@
 ---
 
 #### US-3.4: 초기 데이터 준비 및 환경 검증
-- [ ] 컨테이너 환경 검증
+- [x] 컨테이너 환경 검증
   - `docker stats` 명령으로 리소스 사용량 확인
   - CPU/Memory 제한이 실제로 적용되는지 확인
   - 각 컨테이너의 헬스 상태 확인
-- [ ] 초기 데이터 준비 스크립트 개선
+- [x] 초기 데이터 준비 스크립트 개선
   - 컨테이너 환경에서 재고 100개 생성
   - Redis 캐시 초기화 (Lua Script용)
   - `make reset` 명령 컨테이너 환경에 맞게 수정
-- [ ] API 동작 확인
+- [x] API 동작 확인
   - 4가지 방법 모두 정상 동작 확인
   - curl 또는 Postman으로 간단한 테스트
   - 각 방법별 1회 수동 테스트 실행
@@ -198,10 +198,10 @@
 ---
 
 #### US-3.5: k6 시나리오 작성 (4개)
-- [ ] `k6-scripts/pessimistic-lock-test.js` 작성
-- [ ] `k6-scripts/optimistic-lock-test.js` 작성
-- [ ] `k6-scripts/redis-lock-test.js` 작성
-- [ ] `k6-scripts/lua-script-test.js` 작성
+- [x] `k6-scripts/pessimistic-lock-test.js` 작성
+- [x] `k6-scripts/optimistic-lock-test.js` 작성
+- [x] `k6-scripts/redis-lock-test.js` 작성
+- [x] `k6-scripts/lua-script-test.js` 작성
 
 **각 스크립트 공통 구성:**
 - VU (Virtual User) 설정
@@ -222,13 +222,13 @@
 ---
 
 #### US-3.6: 단일 방법 테스트 실행 (Pessimistic Lock)
-- [ ] Pessimistic Lock k6 스크립트 실행
-- [ ] 결과 수집 및 분석
+- [x] Pessimistic Lock k6 스크립트 실행
+- [x] 결과 수집 및 분석
   - TPS (Transactions Per Second)
   - Latency (p50, p95, p99)
   - Success Rate
   - HTTP 요청 실패율
-- [ ] 결과 저장 (JSON 또는 CSV)
+- [x] 결과 저장 (JSON 또는 CSV)
 
 **Acceptance Criteria:**
 - Pessimistic Lock 부하 테스트 성공
@@ -334,15 +334,15 @@
 - [x] `iteration-1-summary.md` 생성
 
 ### Iteration 2: 부하 테스트 환경 구축 및 k6 시나리오 작성 ✅
-- [ ] 애플리케이션 Dockerfile 작성 완료
-- [ ] docker-compose.yml 확장 (app 서비스 추가)
-- [ ] 리소스 제한 설정 완료 (CPU/Memory)
-- [ ] 컨테이너 환경 검증 완료 (`docker stats`)
-- [ ] 초기 데이터 준비 스크립트 개선
-- [ ] 4개 k6 스크립트 작성
-- [ ] 단일 방법 테스트 실행 및 검증
-- [ ] Checkpoint 2-1, 2-2, 2-3 통과
-- [ ] `iteration-2-summary.md` 생성
+- [x] 애플리케이션 Dockerfile 작성 완료
+- [x] docker-compose.yml 확장 (app 서비스 추가)
+- [x] 리소스 제한 설정 완료 (CPU/Memory)
+- [x] 컨테이너 환경 검증 완료 (`docker stats`)
+- [x] 초기 데이터 준비 스크립트 개선
+- [x] 4개 k6 스크립트 작성
+- [x] 단일 방법 테스트 실행 및 검증
+- [x] Checkpoint 2-1, 2-2, 2-3 통과
+- [x] `iteration-2-summary.md` 생성
 
 ### Iteration 3: 전체 방법 부하 테스트 및 결과 분석 ✅
 - [ ] 4가지 방법 전체 부하 테스트 완료

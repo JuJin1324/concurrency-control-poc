@@ -1,0 +1,11 @@
+.gradle
+build
+!build/libs/*.jar
+.git
+.idea
+*.md
+.agile
+docs
+mysql-data
+node_modules
+k6-scripts

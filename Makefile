@@ -1,4 +1,9 @@
-.PHONY: up down ps logs clean mysql redis reset-db reset-redis show-db show-redis
+.PHONY: build up down ps logs clean mysql redis reset show-db show-redis stats
+
+# 애플리케이션 빌드 및 이미지 생성
+build:
+	./gradlew clean bootJar
+	docker compose build
 
 # Docker Compose 실행 (백그라운드)
 up:
@@ -14,7 +19,11 @@ ps:
 
 # 로그 확인 (실시간)
 logs:
-	docker compose logs -f
+	docker compose logs -f app
+
+# 리소스 사용량 실시간 확인
+stats:
+	docker stats
 
 # 초기화 (컨테이너 및 볼륨 삭제)
 clean:
@@ -28,15 +37,11 @@ mysql:
 redis:
 	docker compose exec redis redis-cli
 
-# MySQL 데이터 리셋 (테이블 초기화 + 재고 100개)
-reset-db:
+# 데이터 전체 리셋 (MySQL + Redis)
+reset:
 	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 100);" 2>/dev/null
-	@echo "MySQL Stock reset: id=1, PRODUCT-001, quantity=100"
-
-# Redis 데이터 리셋 (stock:1 = 100)
-reset-redis:
 	@docker compose exec redis redis-cli set stock:1 100 > /dev/null
-	@echo "Redis Stock reset: stock:1 = 100"
+	@echo "All environments reset: PRODUCT-001 Stock = 100 (MySQL & Redis)"
 
 # MySQL 재고 데이터 조회
 show-db:
@@ -45,4 +50,3 @@ show-db:
 # Redis 재고 데이터 조회 (stock:1)
 show-redis:
 	@docker compose exec redis redis-cli get stock:1
-
