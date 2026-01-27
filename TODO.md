@@ -38,6 +38,17 @@ docker/
 
 ---
 
+### 4. README.md 고도화 (The Face of Project & Onboarding)
+
+**목표:** README.md를 "별도의 문서 없이도 누구나 5분 안에 실행 가능한 온보딩 문서"로 전환
+- [ ] **Quick Start 최상단 배치:** `make build && make up` 등 원라이너 실행 명령어 강조
+- [ ] **Sprint별 요약 섹션 추가:** Sprint 1(DB), Sprint 2(Redis), Sprint 3(Performance)의 핵심 결과 요약
+- [ ] **성능 리포트 링크:** 상세 데이터(`docs/performance-test-result.md`)로 연결되는 요약 테이블 제공
+- [ ] **실행 가이드 통합:** `Makefile` 사용법 및 환경 구축 가이드를 메인에 배치
+- [ ] **AI 위임 가능:** Sprint 4 진행 시 AI에게 전체 히스토리를 요약하여 README 작성을 위임할 것
+
+---
+
 ### 진행 방법
 
 - [ ] AI와 함께 상의해서 진행
