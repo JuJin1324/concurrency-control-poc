@@ -313,6 +313,43 @@
 
 ---
 
+### Iteration 4: 대규모 트래픽 및 한계 돌파 테스트 (Gap 보완)
+
+> **Why?** `how-diagram.md`의 목표(1k, 10k VU) 대비 현재 테스트(100 TPS)가 부족함. 시스템의 최대 처리량(Max TPS)을 측정하기 위함.
+
+#### US-3.10: k6 스크립트 고도화 (Stress Test 모드)
+- [ ] 스크립트 수정: `k6-scripts/stress-test.js` (통합 스크립트)
+  - Executor 변경: `ramping-vus` (점진적 VU 증가)
+  - Target: VU 100 -> 1,000 -> 5,000
+  - Method 파라미터화 (`-e METHOD=pessimistic`)
+- [ ] Docker 리소스 모니터링 준비 (`docker stats`)
+
+**Acceptance Criteria:**
+- 단일 스크립트로 4가지 방식 모두 테스트 가능
+- VU 5,000까지 부하를 줄 수 있는 설정값 확보
+
+#### US-3.11: 대규모 시나리오 실행
+- [ ] **Step 1: High Load (VU 1,000 / 재고 1,000)**
+  - 4가지 방식 모두 실행
+- [ ] **Step 2: Extreme Load (VU 5,000 / 재고 10,000)**
+  - 4가지 방식 모두 실행
+  - Connection Pool 고갈, Redis Timeout 등 장애 상황 관측
+
+**Acceptance Criteria:**
+- 각 방식별 Max TPS 측정 완료
+- 병목 지점(Bottleneck) 파악 (CPU, Connection, Network 등)
+
+#### US-3.12: 최종 성능 리포트 전면 개정 (`v2`)
+- [ ] `docs/performance-test-result.md` 업데이트
+  - 100 TPS vs Max TPS 비교
+  - 대규모 트래픽에서의 순위 변화 분석
+  - `how-diagram.md`의 가설 검증 결과 포함
+
+**Acceptance Criteria:**
+- "대규모 트래픽 처리 경험"을 증명할 수 있는 수준의 데이터 확보
+
+---
+
 ## Sprint 3 Definition of Done
 
 ### Sprint 시작 전: 테스트 코드 품질 개선 ✅
@@ -355,12 +392,18 @@
 - [x] Checkpoint 3-1, 3-2 통과
 - [x] `iteration-3-summary.md` 생성
 
+### Iteration 4: 대규모 트래픽 및 한계 돌파 테스트
+- [ ] k6 스트레스 테스트 스크립트 작성
+- [ ] VU 1,000 / 5,000 테스트 실행
+- [ ] Max TPS 및 병목 구간 분석
+- [ ] 성능 리포트 v2 업데이트
+
 ### 최종 검증
-- [x] 4개 k6 스크립트 모두 정상 동작
-- [x] 정량 지표 측정 완료 (3회 이상 반복)
-- [x] 성능 비교 문서 완성
-- [x] 실무 적용 가이드 완성
-- [x] "어떤 상황에 어떤 방법을 쓸 것인가" 명확히 정리됨
+- [ ] 4개 k6 스크립트 모두 정상 동작
+- [ ] 정량 지표 측정 완료 (3회 이상 반복)
+- [ ] 성능 비교 문서 완성
+- [ ] 실무 적용 가이드 완성
+- [ ] "어떤 상황에 어떤 방법을 쓸 것인가" 명확히 정리됨
 
 ---
 
