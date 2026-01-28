@@ -1,7 +1,7 @@
-# Iteration 3 Summary: 테스트 인프라 재구성
+# Iteration 4 Summary: README.md 고도화
 
 **Sprint:** Sprint 4 - 문서화 + 프로젝트 완성
-**Iteration:** 3/5
+**Iteration:** 4/5
 **완료일:** 2026-01-28
 **상태:** ✅ 완료
 
@@ -9,166 +9,175 @@
 
 ## 1. 완료한 작업
 
-### 1.1 k6 스크립트 재구성 (메서드별 → 시나리오별)
+### 1.1 README.md 전면 개편
 
-**변경 이유:**
-- 기존: `pessimistic-test.js`, `optimistic-test.js`, `redis-lock-test.js`, `lua-script-test.js` (메서드별 4개)
-- 문제: 각 메서드마다 동일한 시나리오를 반복해서 작성 → 유지보수 어려움
-- 해결: 시나리오별로 통합하고, 환경변수 `METHOD`로 메서드 선택
+**목표:**
+> "별도의 문서 없이도 누구나 5분 안에 실행 가능한 온보딩 문서"로 전환
 
-**변경 사항:**
-- [x] `stress-test.js` → `high-test.js` (rename)
-- [x] 최종 스크립트 구조 (시나리오별):
-  - `high-test.js` - High Load (재고 1,000개)
-  - `extreme-test.js` - Extreme Load (재고 10,000개)
-  - `hell-test.js` - Hell Test (재고 100개 vs 5,000 VUs)
-  - `recovery-test.js` - Recovery Test (회복력 검증)
+**주요 변경사항:**
 
-**사용 예시:**
-```bash
-# 동일한 스크립트, 다른 메서드
-k6 run -e METHOD=pessimistic k6-scripts/high-test.js
-k6 run -e METHOD=lua-script k6-scripts/high-test.js
-```
+#### ✅ Quick Start 최상단 배치
+- 3단계로 간소화: 인프라 시작 → 빌드 → Hell Test 재현
+- 4가지 메서드별 복사-붙여넣기 가능한 one-liner 제공
+- iteration-2-summary.md의 재현 가이드 완전 반영
 
----
+#### ✅ 성능 테스트 결과 요약
+- Hell Test 결과를 표로 명확히 제시
+- 조건 명시: 재고 100개 vs 5,000 VUs / Tuned Spec
+- 각 방법의 특징을 한 줄로 요약
 
-### 1.2 Makefile 개선 (자동화 제거)
+#### ✅ 프로젝트 목표 (What/Why/How) 추가
+- What: 이커머스 재고 차감 동시성 문제 해결
+- Why: 대기업 백엔드 "대규모 트래픽 처리 경험" 증명
+- How: 4가지 방법 구현 및 정량 지표 측정
 
-**변경 이유:**
-- 기존: `make test` 명령어로 전체 자동화
-- 문제점:
-  1. Recovery Test는 Extreme Load **직후** 실행해야 의미가 있음
-  2. `make test`가 내부에서 `make clean && make up`을 하면 연속성이 깨짐
-  3. 사용자가 특정 메서드/시나리오만 테스트하고 싶을 때 유연성 부족
-  4. 과도한 자동화 = 선택권 제거
+#### ✅ 테스트 시나리오 가이드
+- High Load Test, Extreme Load Test, Hell Test, Recovery Test
+- 각 시나리오의 목적과 실행 방법 명시
+- Recovery Test 주의사항 강조 (도커 재시작 금지)
 
-**변경 사항:**
-- [x] `.PHONY`에서 `test` 제거
-- [x] `make test` 명령어 전체 제거 (133-169줄 삭제)
-- [x] Makefile의 역할 재정의: **준비 명령어만 제공**
+#### ✅ Makefile 명령어 정리
+- 카테고리별 분류: 인프라 관리, 데이터 관리, 테스트 유틸리티, DB/Redis 접속
+- 각 명령어에 주석 추가
 
-**최종 Makefile 구조:**
-```makefile
-# 데이터 초기화
-make reset        # 100개
-make reset-1k     # 1,000개
-make reset-10k    # 10,000개
+#### ✅ 문서 링크 통합
+- 아키텍처, 기술 탐구, 의사결정 기록, 성능 분석 섹션으로 분류
+- 모든 주요 문서 링크 제공
 
-# 결과 확인
-make show-db      # MySQL 재고 확인
-make show-redis   # Redis 재고 확인
+#### ✅ Sprint 진행 과정 추가
+- Sprint 0-4의 목표와 주요 산출물 요약
+- 프로젝트 전체 흐름 파악 가능
 
-# 테스트 유틸리티
-make warmup       # 시스템 예열 (METHOD 파라미터)
+#### ✅ 핵심 인사이트 정리
+- Warm-up의 중요성
+- Optimistic Lock의 재발견
+- 시스템 한계 발견 및 해결
 
-# 인프라 관리
-make up / down / clean
-
-# 시스템 정보
-make ps / stats
-```
-
-**철학:**
-- ✅ 반복적인 설정 자동화 (reset, show)
-- ✅ 사용자가 테스트 순서/조합을 직접 결정
-- ❌ 테스트 실행 순서 강제하지 않음 (Recovery 같은 순차 테스트 가능)
+#### ✅ 학습 목표 달성 섹션
+- 대규모 트래픽 처리 경험 증명
+- 동시성 제어 전문성 확보
+- 재현 가능성 보장
 
 ---
 
-## 2. 생성/수정된 파일
+## 2. 제거/수정된 내용
 
-### 변경된 파일
+### 제거된 내용
+- ❌ `make test` 명령어 (Iteration 3에서 이미 Makefile에서 제거됨)
+- ❌ 자동화 테스트 관련 설명 (과도한 자동화 제거 철학 반영)
+
+### 수정된 내용
+- ✅ Quick Start를 실제 사용 가능한 명령어로 변경
+- ✅ 성능 테스트 결과 표 업데이트 (Hell Test 기준)
+- ✅ Sprint 4 현재 진행 상황 반영
+
+---
+
+## 3. 생성/수정된 파일
+
+### 수정된 파일
 | 파일 경로 | 변경 내용 |
 |-----------|-----------|
-| `k6-scripts/stress-test.js` → `k6-scripts/high-test.js` | Rename (시나리오명 명확화) |
-| `Makefile` | `make test` 제거, `make warmup` 추가, `.PHONY` 정리 |
-
-### 파일 구조 (k6-scripts/)
-```
-k6-scripts/
-├── high-test.js       ✅ (High Load - 재고 1,000개)
-├── extreme-test.js    ✅ (Extreme Load - 재고 10,000개)
-├── hell-test.js       ✅ (Hell Test - 재고 100개 vs 5,000 VUs)
-├── recovery-test.js   ✅ (Recovery Test - 회복력 검증)
-├── hello-world.js     (학습용)
-└── template.js        (템플릿)
-```
+| `README.md` | 전면 개편 (300줄, Quick Start 최상단, 재현 가이드 포함) |
 
 ---
 
-## 3. 주요 결정사항
+## 4. 주요 결정사항
 
-### 결정 1: 자동화 제거
-- **선택:** `make test` 제거
+### 결정 1: "재현 가능성"에 집중
+- **선택:** iteration-2-summary.md의 one-liner 명령어를 그대로 README에 포함
 - **이유:**
-  - Recovery Test는 Extreme 직후 실행해야 의미 있음 (도커 재시작하면 무의미)
-  - 사용자에게 선택권 제공 (특정 메서드만 테스트)
-  - 과도한 자동화는 프로젝트 범위 벗어남 (brainstorm.md 철학: "하나를 완벽하게")
+  - 복사-붙여넣기로 즉시 실행 가능 (5분 안에)
+  - 포트폴리오 목적: "이렇게 테스트했습니다"를 투명하게 제시
+  - 재현 가능성 = 신뢰도 증가
 - **트레이드오프:**
-  - 장점: 유연성 증가, 순차 의존 테스트 가능
-  - 단점: 사용자가 명령어를 직접 조합해야 함 (하지만 README에 제공 예정)
+  - 장점: 누구나 정확히 재현 가능
+  - 단점: 명령어가 길어짐 (하지만 복사-붙여넣기이므로 문제없음)
 
-### 결정 2: 시나리오별 스크립트 구조
-- **선택:** 메서드별 → 시나리오별
+### 결정 2: Quick Start 최상단 배치
+- **선택:** Quick Start를 프로젝트 소개보다 먼저 배치
 - **이유:**
-  - 코드 중복 제거 (4개 → 4개이지만 내용 통합)
-  - 환경변수 `METHOD`로 메서드 선택
-  - 유지보수성 향상
+  - 채용 담당자/면접관이 가장 먼저 보는 부분
+  - "5분 안에 실행 가능"을 즉시 증명
+  - GitHub README 패턴 (많은 오픈소스 프로젝트가 이 방식)
 - **트레이드오프:**
-  - 장점: DRY (Don't Repeat Yourself), 유지보수 쉬움
-  - 단점: 환경변수 전달 필요 (하지만 간단함)
+  - 장점: 빠른 온보딩, 즉각적인 가치 전달
+  - 단점: 프로젝트 배경 설명이 뒤로 밀림 (하지만 Quick Start 아래에 바로 배치하여 해결)
+
+### 결정 3: Recovery Test 주의사항 명시
+- **선택:** "도커 재시작 금지!" 주의사항 강조
+- **이유:**
+  - Iteration 3에서 배운 교훈 (Recovery Test는 Extreme 직후 실행해야 의미 있음)
+  - 사용자가 실수하지 않도록 명확한 가이드 필요
+- **트레이드오프:**
+  - 장점: 정확한 테스트 재현
+  - 단점: 추가 설명 필요 (하지만 중요한 내용이므로 필수)
 
 ---
 
-## 4. 다음 단계 준비
+## 5. 검증 완료
 
-**README.md 작성 시 포함할 내용:**
+### README.md 품질 체크
+- [x] Quick Start가 최상단에 배치됨
+- [x] 5분 안에 실행 가능한 명령어 제공
+- [x] 성능 테스트 결과 요약 포함
+- [x] 재현 가이드 명확 (복사-붙여넣기 가능)
+- [x] 모든 주요 문서 링크 유효
+- [x] Recovery Test 주의사항 명시
+- [x] Makefile 명령어 정리 완료
+- [x] Sprint 진행 과정 포함
+- [x] 핵심 인사이트 정리
 
-### Quick Test (Individual)
-```bash
-make reset && k6 run -e METHOD=lua-script k6-scripts/hell-test.js
-```
-
-### Hell Test (5,000 VUs)
-```bash
-# 1. Prepare
-make reset && k6 run -e METHOD=lua-script --vus 100 --iterations 2000 k6-scripts/hell-test.js > /dev/null
-
-# 2. Execute
-k6 run -e METHOD=lua-script -e VUS=5000 -e ITERATIONS=5000 k6-scripts/hell-test.js
-
-# 3. Verify
-make show-db  # Expected: quantity = 0
-```
-
-### Recovery Test (Resilience)
-```bash
-# 1. Extreme Load
-make reset-10k && k6 run -e METHOD=lua-script k6-scripts/extreme-test.js
-
-# 2. Recovery (바로 이어서, 도커 재시작 하지 말 것!)
-k6 run -e METHOD=lua-script --vus 100 --iterations 100 k6-scripts/hell-test.js
-```
-
-> 💡 **Tip:** 도커를 재시작하면 Recovery 테스트의 의미가 사라집니다.
+### 링크 유효성 확인
+- [x] `docs/performance-test-result.md`
+- [x] `docs/architecture/`
+- [x] `docs/technology/redis-deep-dive.md`
+- [x] `docs/technology/k6-overview.md`
+- [x] `docs/adr/` (5개 ADR)
+- [x] `docs/practical-guide.md`
+- [x] `docs/alignment-check.md`
 
 ---
 
-## 5. 테스트 결과
+## 6. 최종 README.md 구조
 
-**변경 후 검증:**
-- [x] k6 스크립트 rename 확인 (`ls k6-scripts/`)
-- [x] Makefile에서 `test` 명령어 제거 확인 (`grep "^test:" Makefile`)
-- [x] Makefile에 `warmup` 명령어 추가 확인 (`grep "^warmup:" Makefile`)
-- [x] `.PHONY` 정리 확인 (info 제거, warmup 추가)
+```markdown
+# Concurrency Control PoC
 
-**검증 결과:**
-```
-✅ high-test.js 존재
-✅ test 명령어 없음 (정상)
-✅ warmup 명령어 추가됨
-✅ .PHONY 정리 완료
+## ⚡ Quick Start (최상단)
+  - 1. 인프라 시작
+  - 2. 빌드
+  - 3. Hell Test 재현 (4가지 메서드)
+
+## 📊 성능 테스트 결과
+  - Hell Test 표
+
+## 🎯 프로젝트 목표
+  - What, Why, How
+
+## 🏗️ 아키텍처
+  - Tech Stack
+  - 패키지 구조
+
+## 🧪 테스트 시나리오
+  - High Load, Extreme Load, Hell Test, Recovery Test
+
+## 🛠️ Makefile 명령어
+  - 인프라, 데이터, 테스트, DB/Redis
+
+## 📚 프로젝트 문서
+  - 아키텍처, 기술 탐구, ADR, 성능 분석
+
+## 🚀 Sprint 진행 과정
+  - Sprint 0-4 요약
+
+## 💡 핵심 인사이트
+  - 3가지 핵심 교훈
+
+## 🎓 학습 목표 달성
+  - 3가지 목표 체크
+
+## 👨‍💻 Author & License
 ```
 
 ---
@@ -180,27 +189,29 @@ k6 run -e METHOD=lua-script --vus 100 --iterations 100 k6-scripts/hell-test.js
 ### 수정 요청사항
 <!--
 예시:
-- [ ] CLAUDE.md도 업데이트 필요
-- [ ] k6 스크립트 주석 추가 필요
+- [ ] Author 섹션에 GitHub, LinkedIn 링크 추가
+- [ ] 기술 스택에 버전 정보 추가
 -->
 
 ### 기타 의견
 <!--
 예시:
-- 이제 README.md 작업 시작하면 됨
-- Iteration 4 (프로젝트 구조 정리)는 생략 가능할 듯
+- README.md 완성도 높음, 바로 사용 가능
+- Sprint 4 거의 완료, Iteration 5 (최종 점검) 진행 예정
 -->
 
 ---
 
 ## 다음 Iteration 준비
 
-**Iteration 4 계획 (원래):** 프로젝트 구조 정리 (TODO.md 반영)
-- 문서 파일 정리 (brainstorm.md, how-diagram.md 등)
-- Docker 파일 구조 정리 (선택)
-
-**대안:** Iteration 4를 건너뛰고 Iteration 5 (README 고도화)로 바로 진행할 수도 있음.
+**Iteration 5 계획:** 최종 점검 및 GitHub 공개 준비
+- 모든 테스트 실행 및 통과 확인
+- 문서 링크 유효성 확인
+- 재현 가능성 검증 (클린 환경에서 Quick Start 실행)
+- v1.0.0 태그 생성
+- GitHub Repository 설정
 
 **시작 전 확인사항:**
-- [ ] Iteration 3 변경사항 커밋 완료
-- [ ] 다음 Iteration 방향 결정 (사용자와 논의)
+- [x] Iteration 4 변경사항 커밋 완료
+- [ ] README.md 최종 검토 (사용자 확인)
+- [ ] 다음 Iteration 진행 여부 결정

@@ -1,7 +1,7 @@
 server:
   tomcat:
     threads:
-      max: 500
+      max: 200  # AWS t3.medium (2 vCPU) 환경 최적화
       min-spare: 50
     accept-count: 1000
     connection-timeout: 20000

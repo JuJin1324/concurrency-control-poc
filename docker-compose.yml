@@ -16,12 +16,13 @@ services:
       - concurrency-network
     deploy:
       resources:
+        # AWS db.t3.medium 급 (2 vCPU / 4GB RAM)
         limits:
-          cpus: '4.0'
-          memory: 2G
-        reservations:
           cpus: '2.0'
-          memory: 1G
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -41,11 +42,12 @@ services:
       - concurrency-network
     deploy:
       resources:
+        # AWS cache.t3.small 급 (1 vCPU / 1GB RAM)
         limits:
-          cpus: '2.0'
+          cpus: '1.0'
           memory: 1G
         reservations:
-          cpus: '1.0'
+          cpus: '0.5'
           memory: 512M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -74,11 +76,12 @@ services:
       - concurrency-network
     deploy:
       resources:
+        # AWS t3.medium 급 (2 vCPU / 4GB RAM)
         limits:
-          cpus: '4.0'
+          cpus: '2.0'
           memory: 4G
         reservations:
-          cpus: '2.0'
+          cpus: '1.0'
           memory: 2G
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
