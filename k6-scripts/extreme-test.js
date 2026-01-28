@@ -17,7 +17,7 @@ export const options = {
       startRate: 10,       // 초당 10개 요청으로 시작
       timeUnit: '1s',
       preAllocatedVUs: 100, // 초기 할당 VU
-      maxVUs: 5000,         // 최대 동시 접속자 (how-diagram 목표 반영)
+      maxVUs: __ENV.VUS ? parseInt(__ENV.VUS) : 10000,         // 최대 동시 접속자 (Extreme)
       stages: [
         { duration: '1m', target: 500 },  // 1분 동안 초당 500개 요청까지 증가
         { duration: '2m', target: 1000 }, // 2분 동안 초당 1000개 요청까지 증가

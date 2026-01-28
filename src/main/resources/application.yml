@@ -1,3 +1,11 @@
+server:
+  tomcat:
+    threads:
+      max: 500
+      min-spare: 50
+    accept-count: 1000
+    connection-timeout: 20000
+
 spring:
   application:
     name: concurrency-control-poc
