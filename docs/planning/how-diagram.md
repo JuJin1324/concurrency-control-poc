@@ -318,7 +318,7 @@ flowchart LR
 
 ## 6. 관련 문서
 
-- **2W 정의:** [brainstorm.md](./brainstorm.md)
+- **2W 정의:** [brainstorm.md](2w-brainstorm.md)
 - **실행 프로젝트:** [concurrency-control-poc](../../../concurrency-control-poc/)
 - **Sprint 계획:** [.agile/sprints/](../../../concurrency-control-poc/.agile/sprints/)
 - **ADR:** [docs/adr/](../../../concurrency-control-poc/docs/adr/)

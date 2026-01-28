@@ -39,8 +39,10 @@ The project is currently in **Sprint 0**, focusing on Platform Engineering and A
     -   `adr/`: Architecture Decision Records (e.g., why 4 methods, why MySQL/Redis).
     -   `architecture/`: Architecture diagrams and descriptions.
     -   `proposals/`: Initial project proposal and scope definition.
--   **`brainstorm.md`**: Initial thought process and history of project definition.
--   **`how-diagram.md`**: (Likely) Drafts for diagrams.
+-   **`docs/planning/`**: 초기 기획 및 로드맵 문서.
+    -   `brainstorm.md`: 프로젝트 정의 및 사고 과정 기록.
+    -   `how-diagram.md`: 마스터 로드맵 및 다이어그램 초안.
+    -   `SCAFFOLDING_REPORT.md`: 초기 프로젝트 구조 생성 리포트.
 
 ## 4. Development Conventions
 

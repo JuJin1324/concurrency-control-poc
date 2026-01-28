@@ -11,7 +11,7 @@ services:
       MYSQL_PASSWORD: app_password
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql-init:/docker-entrypoint-initdb.d
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d
     networks:
       - concurrency-network
     deploy:
