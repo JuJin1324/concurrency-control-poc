@@ -16,20 +16,24 @@ services:
       - concurrency-network
     deploy:
       resources:
-        # AWS db.t3.medium 급 (2 vCPU / 4GB RAM)
+        # AWS db.t3.medium 급 (2 vCPU / 2GB RAM)
         limits:
           cpus: '2.0'
-          memory: 4G
+          memory: 2G
         reservations:
           cpus: '1.0'
-          memory: 2G
+          memory: 1G
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --max_connections=1000
 
   redis:
     image: redis:7.0-alpine
@@ -42,13 +46,17 @@ services:
       - concurrency-network
     deploy:
       resources:
-        # AWS cache.t3.small 급 (1 vCPU / 1GB RAM)
+        # AWS cache.t3.small 급 (2 vCPU / 1.37GB RAM)
         limits:
-          cpus: '1.0'
-          memory: 1G
+          cpus: '2.0'
+          memory: 1.37G
         reservations:
-          cpus: '0.5'
+          cpus: '1.0'
           memory: 512M
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -76,13 +84,17 @@ services:
       - concurrency-network
     deploy:
       resources:
-        # AWS t3.medium 급 (2 vCPU / 4GB RAM)
+        # AWS t3.medium 급 (2 vCPU / 2GB RAM)
         limits:
           cpus: '2.0'
-          memory: 4G
+          memory: 2G
         reservations:
           cpus: '1.0'
-          memory: 2G
+          memory: 1G
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
       interval: 10s

@@ -52,8 +52,8 @@ public class StockController {
 
     private StockService getStockService(String method) {
         String beanName = switch (method.toLowerCase()) {
-            case "pessimistic" -> "pessimisticLockStockService";
-            case "optimistic" -> "optimisticLockStockService";
+            case "pessimistic", "pessimistic-lock" -> "pessimisticLockStockService";
+            case "optimistic", "optimistic-lock" -> "optimisticLockStockService";
             case "redis-lock" -> "redisLockStockService";
             case "lua-script" -> "luaScriptStockService";
             default -> throw new IllegalArgumentException("지원하지 않는 Lock 방식입니다: " + method);

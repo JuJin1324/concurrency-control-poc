@@ -47,15 +47,20 @@ flowchart TD
         S4[Sprint 4<br/>최종 완성<br/>Hell Test + 문서화]
     end
 
-    subgraph Current["🔄 현재 위치: Deep Dive"]
-        S5[Sprint 5<br/>심화 연구/사례 분석]
+    subgraph Optimization["🚀 Phase 4: Optimization"]
+        S5[Sprint 5<br/>한계 돌파<br/>Virtual Thread + Tuning]
+    end
+
+    subgraph DeepDive["🔄 Phase 5: Deep Dive"]
+        S6[Sprint 6<br/>심화 연구/사례 분석]
     end
 
     S0 -->|Done| S1
     S1 -->|Done| S2
     S2 -->|Done| S3
     S3 -->|Done| S4
-    S4 -.->|진행 예정| S5
+    S4 -->|Next| S5
+    S5 -.->|Future| S6
 ```
 
 ### 1.2 진행 상태 (Timeline View)
@@ -75,8 +80,9 @@ flowchart LR
     end
 
     subgraph Todo["📋 할 일"]
-        T6[Sprint 5<br/>실무 사례 심화 분석]
-        T7[블로그 포스팅 발행]
+        T6[Sprint 5<br/>Virtual Thread<br/>Pool Tuning]
+        T7[Sprint 6<br/>실무 사례 분석]
+        T8[최종 회고]
     end
 
     D1 --> D2
@@ -89,6 +95,7 @@ flowchart LR
     D8 --> D9
     D9 --> T6
     T6 --> T7
+    T7 --> T8
 ```
 
 ---
@@ -107,6 +114,14 @@ flowchart LR
 | **아키텍처** | Layered Architecture (단순화) | ✅ |
 | **인프라** | Docker Compose (MySQL + Redis) | ✅ |
 
+### 🚀 Optimization Scope (신규 추가)
+
+| 항목 | 설명 | 상태 |
+|------|------|:---:|
+| **Virtual Threads** | Java 21 Virtual Threads 도입 및 성능 비교 | 📋 |
+| **Connection Pool** | HikariCP, Redis Connection Pool 최적화 | 📋 |
+| **OS Tuning** | TCP Port 확장, ulimit 설정 (10k VUs 대응) | 📋 |
+
 ---
 
 ## 3. Sprint 계획 및 결과
@@ -120,7 +135,8 @@ flowchart LR
 | **Sprint 2** | Phase 1 | Redis Lock 구현 | ✅ 완료 |
 | **Sprint 3** | Phase 2 | 부하 테스트 + 성능 비교 | ✅ 완료 |
 | **Sprint 4** | Phase 3 | 최종 완성 + 문서화 | ✅ 완료 |
-| **Sprint 5** | Deep Dive | 심화 연구 (실무 도입 사례) | 📋 예정 |
+| **Sprint 5** | Optimization | **한계 돌파 (Virtual Threads + Tuning)** | 📋 예정 |
+| **Sprint 6** | Deep Dive | 심화 연구 (실무 도입 사례) | 📋 예정 |
 
 ### Sprint별 상세 결과
 
@@ -140,7 +156,32 @@ flowchart LR
 
 ---
 
-#### Sprint 5: 심화 연구 (실무 도입 사례) 📋 예정
+#### Sprint 5: 한계 돌파 (Optimization) 📋 예정
+
+**목표:** 10,000 VUs 테스트 실패 원인 분석 및 시스템 최적화를 통한 물리적 한계 극복
+
+**배경:**
+- Sprint 3/4의 Extreme Test(10k VUs)에서 Connection Error 발생
+- 원인 분석 결과: Platform Thread 한계, Connection Pool 부족, OS Port 고갈 확인
+
+**주요 과제 (Technical Deep Dive):**
+1.  **Java 21 Virtual Threads 도입:**
+    - Platform Thread(Tomcat 200) vs Virtual Thread 성능 비교
+    - Context Switching 비용 감소 효과 검증
+2.  **Connection Pool Tuning:**
+    - HikariCP (DB), Lettuce (Redis) Pool Size 최적화
+    - "보이지 않는 병목" 제거
+3.  **OS/Infra Tuning:**
+    - macOS TCP Port 범위 확장 (`sysctl`)
+    - Docker `ulimit` 설정 추가
+
+**기대 효과:**
+- 10,000 VUs 무중단 처리 성공
+- 하드웨어 자원(CPU/Memory) 효율성 극대화 증명
+
+---
+
+#### Sprint 6: 심화 연구 (실무 도입 사례) 📋 예정
 
 **목표:** 각 동시성 제어 방식의 실제 현업 도입 사례 연구 및 분석 - **개발 중심 → 운영 중심 전환**
 
