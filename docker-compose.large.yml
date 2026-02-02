@@ -1,0 +1,37 @@
+services:
+  mysql:
+    deploy:
+      resources:
+        # AWS db.t3.xlarge 급 (4 vCPU / 4GB RAM)
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+
+  redis:
+    deploy:
+      resources:
+        # AWS cache.t3.xlarge 급 (4 vCPU / 3GB RAM -> Redis는 싱글스레드라 CPU보단 메모리/네트워크 중요)
+        # 하지만 컨테이너 처리량을 위해 CPU 제한을 넉넉히 풂
+        limits:
+          cpus: '4.0'
+          memory: 3G
+        reservations:
+          cpus: '2.0'
+          memory: 1G
+
+  app:
+    deploy:
+      resources:
+        # AWS t3.xlarge 급 (4 vCPU / 4GB RAM)
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+    environment:
+      # 대규모 트래픽 처리를 위해 톰캣/커넥션 풀 설정도 튜닝 가능 (현재는 기본값 유지하고 리소스만 증설)
+      SPRING_THREADS_VIRTUAL_ENABLED: "true"

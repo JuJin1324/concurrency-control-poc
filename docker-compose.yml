@@ -75,6 +75,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: app_password
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      SPRING_THREADS_VIRTUAL_ENABLED: "${SPRING_THREADS_VIRTUAL_ENABLED:-true}"
     depends_on:
       mysql:
         condition: service_healthy

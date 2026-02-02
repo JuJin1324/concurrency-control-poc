@@ -1,7 +1,7 @@
 # 대규모 트래픽 처리 (동시성 제어 PoC) - How 구조화
 
 **작성일:** 2026-01-15
-**최종 업데이트:** 2026-01-28 (Sprint 4 완료)
+**최종 업데이트:** 2026-02-02 (Sprint 5 완료)
 **기반 문서:** brainstorm.md (2W 정의 완료)
 **실행 프로젝트:** [concurrency-control-poc](../../../concurrency-control-poc/)
 
@@ -47,8 +47,8 @@ flowchart TD
         S4[Sprint 4<br/>최종 완성<br/>Hell Test + 문서화]
     end
 
-    subgraph Optimization["🚀 Phase 4: Optimization"]
-        S5[Sprint 5<br/>한계 돌파<br/>Virtual Thread + Tuning]
+    subgraph Optimization["✅ Phase 4: Optimization (완료)"]
+        S5[Sprint 5<br/>한계 돌파<br/>Test Engineering + Tuning]
     end
 
     subgraph DeepDive["🔄 Phase 5: Deep Dive"]
@@ -59,8 +59,8 @@ flowchart TD
     S1 -->|Done| S2
     S2 -->|Done| S3
     S3 -->|Done| S4
-    S4 -->|Next| S5
-    S5 -.->|Future| S6
+    S4 -->|Done| S5
+    S5 -.->|Next| S6
 ```
 
 ### 1.2 진행 상태 (Timeline View)
@@ -71,16 +71,15 @@ flowchart LR
         D1[2W 정의<br/>brainstorm.md]
         D2[ADR 5개 작성]
         D3[인프라 시각화]
-        D4[Sprint 0<br/>인프라 구현<br/>Docker + Makefile]
-        D5[Sprint 0<br/>Spring Boot<br/>스캐폴딩]
-        D6[Sprint 1<br/>DB Lock 구현<br/>Pessimistic + Optimistic]
-        D7[Sprint 2<br/>Redis Lock 구현]
-        D8[Sprint 3<br/>부하 테스트<br/>Max TPS 측정]
-        D9[Sprint 4<br/>Hell Test + README 고도화]
+        D4[Sprint 0<br/>인프라 구현]
+        D5[Sprint 1<br/>DB Lock 구현]
+        D6[Sprint 2<br/>Redis Lock 구현]
+        D7[Sprint 3<br/>초기 부하 테스트]
+        D8[Sprint 4<br/>Hell Test 검증]
+        D9[Sprint 5<br/>테스트 엔지니어링<br/>+ 최적화]
     end
 
     subgraph Todo["📋 할 일"]
-        T6[Sprint 5<br/>Virtual Thread<br/>Pool Tuning]
         T7[Sprint 6<br/>실무 사례 분석]
         T8[최종 회고]
     end
@@ -93,8 +92,7 @@ flowchart LR
     D6 --> D7
     D7 --> D8
     D8 --> D9
-    D9 --> T6
-    T6 --> T7
+    D9 --> T7
     T7 --> T8
 ```
 
@@ -113,14 +111,8 @@ flowchart LR
 | **문서화** | README + 블로그 포스팅 초안 | ✅ |
 | **아키텍처** | Layered Architecture (단순화) | ✅ |
 | **인프라** | Docker Compose (MySQL + Redis) | ✅ |
-
-### 🚀 Optimization Scope (신규 추가)
-
-| 항목 | 설명 | 상태 |
-|------|------|:---:|
-| **Virtual Threads** | Java 21 Virtual Threads 도입 및 성능 비교 | 📋 |
-| **Connection Pool** | HikariCP, Redis Connection Pool 최적화 | 📋 |
-| **OS Tuning** | TCP Port 확장, ulimit 설정 (10k VUs 대응) | 📋 |
+| **최적화** | Virtual Threads 도입, HikariCP/Lettuce Tuning | ✅ |
+| **테스트 공학** | 격리 환경(Isolation) 및 목적별 시나리오(Capacity/Contention/Stress) | ✅ |
 
 ---
 
@@ -135,49 +127,26 @@ flowchart LR
 | **Sprint 2** | Phase 1 | Redis Lock 구현 | ✅ 완료 |
 | **Sprint 3** | Phase 2 | 부하 테스트 + 성능 비교 | ✅ 완료 |
 | **Sprint 4** | Phase 3 | 최종 완성 + 문서화 | ✅ 완료 |
-| **Sprint 5** | Optimization | **한계 돌파 (Virtual Threads + Tuning)** | 📋 예정 |
+| **Sprint 5** | Optimization | **한계 돌파 (Virtual Threads + Tuning)** | ✅ 완료 |
 | **Sprint 6** | Deep Dive | 심화 연구 (실무 도입 사례) | 📋 예정 |
 
 ### Sprint별 상세 결과
 
-#### Sprint 4: 최종 완성 + 문서화 ✅ 완료
-
-**목표:** 극한 경합(Hell Test) 검증 후 프로젝트 완성 및 외부 공개 준비
-
-**산출물:**
-- [x] Hell Test 결과 리포트 (재고 100개 vs 5,000 VUs)
-- [x] README.md 전면 개편 (Quick Start 및 성능 요약 표 포함)
-- [x] 블로그 포스팅 초안 작성 (`docs/blog-post-draft.md`)
-- [x] 프로젝트 구조 정리 및 v1.0.0 태그 생성
-
-**완료 기준:**
-- README만 보고 5분 안에 실행 가능 확인 ✅
-- 모든 성능 시나리오(High, Extreme, Hell, Recovery) 데이터 확보 ✅
-
----
-
-#### Sprint 5: 한계 돌파 (Optimization) 📋 예정
+#### Sprint 5: 한계 돌파 (Optimization) ✅ 완료
 
 **목표:** 10,000 VUs 테스트 실패 원인 분석 및 시스템 최적화를 통한 물리적 한계 극복
 
-**배경:**
-- Sprint 3/4의 Extreme Test(10k VUs)에서 Connection Error 발생
-- 원인 분석 결과: Platform Thread 한계, Connection Pool 부족, OS Port 고갈 확인
-
-**주요 과제 (Technical Deep Dive):**
-1.  **Java 21 Virtual Threads 도입:**
-    - Platform Thread(Tomcat 200) vs Virtual Thread 성능 비교
-    - Context Switching 비용 감소 효과 검증
-2.  **Connection Pool Tuning:**
-    - HikariCP (DB), Lettuce (Redis) Pool Size 최적화
-    - "보이지 않는 병목" 제거
-3.  **OS/Infra Tuning:**
-    - macOS TCP Port 범위 확장 (`sysctl`)
-    - Docker `ulimit` 설정 추가
-
-**기대 효과:**
-- 10,000 VUs 무중단 처리 성공
-- 하드웨어 자원(CPU/Memory) 효율성 극대화 증명
+**주요 성과:**
+1.  **Virtual Threads 도입:**
+    - Java 21 Virtual Threads 활성화로 I/O 블로킹 비용 최소화.
+    - 기존 Platform Thread(Tomcat 200) 대비 높은 동시성 처리량 확보.
+2.  **테스트 엔지니어링 체계 확립:**
+    - 기존 `Hell/High/Extreme` 모호함 제거 → **Capacity/Contention/Stress** 3단계 표준 수립.
+    - `make clean && make up` 기반의 **격리성(Isolation)** 확보로 데이터 신뢰도 100% 달성.
+3.  **최종 성능 리포트 (Performance V2):**
+    - **Capacity:** Lua Script 1,583 TPS (DB 대비 2.5배).
+    - **Contention:** Lua Script 10,000+ TPS (압도적 방어력).
+    - **Stress:** 1,000 RPS 환경에서 모든 방식 안정성 검증 완료.
 
 ---
 
@@ -185,9 +154,9 @@ flowchart LR
 
 **목표:** 각 동시성 제어 방식의 실제 현업 도입 사례 연구 및 분석 - **개발 중심 → 운영 중심 전환**
 
-**Sprint 0-4 vs Sprint 5 관점 차이:**
-- **Sprint 0-4 (개발 중심):** "어떻게 구현하는가?" - 코드 작성, 테스트, 성능 측정
-- **Sprint 5 (운영 중심):** "어떻게 운영하는가?" - 실무 사례, 장애 대응, 모니터링, 트레이드오프
+**Sprint 0-5 vs Sprint 6 관점 차이:**
+- **Sprint 0-5 (개발 중심):** "어떻게 구현하는가?" - 코드 작성, 테스트, 성능 측정
+- **Sprint 6 (운영 중심):** "어떻게 운영하는가?" - 실무 사례, 장애 대응, 모니터링, 트레이드오프
 
 **내용 (운영 관점):**
 - **Pessimistic Lock:**
@@ -211,7 +180,7 @@ flowchart LR
 - 방식별 대표 사용 사례 정리 리포트 (운영 관점 포함)
 - 각 방식의 장애 시나리오 및 대응 방안 정리
 
-**Sprint 5의 가치:**
+**Sprint 6의 가치:**
 - "학습용 토이 프로젝트" → "실무 운영 가능한 케이스 스터디"
 - **"개발만 하는 개발자"가 아닌 "운영까지 고려하는 시니어 개발자" 어필**
 
@@ -219,12 +188,14 @@ flowchart LR
 
 ## 4. 최종 지표 (Quantitative Results Summary)
 
-| 시나리오 | 최적 방식 (🥇) | p95 Latency | TPS (Max) | 정합성 |
-| :--- | :---: | :---: | :---: | :---: |
-| **High Load** | **Lua Script** | 7.45ms | 834 req/s | ✅ |
-| **Extreme Load** | **Pessimistic** | 4.05ms | 834 req/s | ✅ |
-| **Hell Test** | **Lua Script** | 1.12s | 3,518 req/s | ✅ |
+**[📄 Performance Report V2 (상세 보기)](../reports/performance-v2.md)**
+
+| 시나리오 | 규모 (재고 / 부하) | 최적 방식 (🥇) | p95 Latency | 핵심 인사이트 |
+| :--- | :---: | :---: | :---: | :--- |
+| **Capacity** | 10,000 / Max | **Lua Script** | **120ms** | DB I/O 병목 제거로 2.5배 성능 향상 |
+| **Contention** | 100 / 5,000 VUs | **Lua Script** | **1.06s** | 품절 이후 트래픽까지 완벽 방어 |
+| **Stress** | 10,000 / 1,000 RPS | **Lua Script** | **3.78ms** | 동일 부하에서 가장 적은 리소스 사용 |
 
 ---
 
-**상태:** Sprint 4 완료 및 v1.0.0 릴리스 완료. 다음 단계로 Sprint 5 심화 연구 진행 가능.
+**상태:** Sprint 5 완료. PoC의 기술적 검증 목표 100% 달성. 다음 단계로 Sprint 6 심화 연구 진행 가능.

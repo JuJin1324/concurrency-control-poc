@@ -87,6 +87,20 @@
 
 ---
 
+### Iteration 6: 문서 정리 및 스프린트 종료 (Cleanup & Finalize) 🧹
+
+**목표:** 더 이상 유효하지 않은 레거시 문서들을 정리하고, 최신 테스트 결과(`performance-v2.md`)를 메인으로 격상시킨다.
+
+- [ ] **[Clean-up]** 레거시 문서 삭제
+    - `docs/proposals/` 디렉토리 전체 삭제
+    - `docs/test-guides/` 내 구형 가이드 삭제 (`high-test.md`, `extreme-test.md`, `hell-test.md`, `recovery-test.md` 등)
+- [ ] **[Refactor]** 프로젝트 메타데이터 최신화
+    - `README.md`: 깨진 링크 제거 및 신규 가이드(`capacity`, `contention`, `stress`) 연결
+    - `GEMINI.md`: 삭제된 디렉토리 참조 제거
+- [ ] **[Finalize]** Sprint 5 종료 처리
+
+---
+
 ## Blockers
 - 없음
 

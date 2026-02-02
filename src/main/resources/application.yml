@@ -37,7 +37,7 @@ spring:
 logging:
   level:
     root: INFO
-    com.concurrency.poc: DEBUG
-    org.springframework.web: DEBUG
-    org.apache.coyote: DEBUG
-    org.hibernate.SQL: INFO
+    com.concurrency.poc: INFO
+    org.springframework.web: INFO
+    org.apache.coyote: WARN
+    org.hibernate.SQL: WARN

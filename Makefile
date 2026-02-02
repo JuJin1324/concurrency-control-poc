@@ -67,27 +67,43 @@ show-redis:
 
 # --- [Test Utilities] ---
 
+# Docker K6 실행 명령어 정의 (내부망 실행)
+K6_CMD = docker run --rm -i \
+	--network concurrency-control-poc_concurrency-network \
+	-v $(shell pwd)/k6-scripts:/scripts \
+	-e BASE_URL=http://app:8080 \
+	grafana/k6:latest run
+
 # Warm-up (시스템 예열)
 # Usage: make warmup METHOD=lua-script
 warmup:
 	@echo "🔥 Warming up (200 iters)..."
-	@k6 run -e METHOD=$(or $(METHOD),pessimistic) k6-scripts/warmup.js > /dev/null 2>&1
+	@$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) /scripts/warmup.js > /dev/null 2>&1
 	@echo "✅ Warm-up Done"
 
 # Capacity Test (처리량 측정)
 # Usage: make test-capacity METHOD=lua-script VUS=100 ITERATIONS=1000
 test-capacity: warmup
 	@echo "🚀 Starting Capacity Test (METHOD=$(or $(METHOD),pessimistic), VUS=$(or $(VUS),100), ITERS=$(or $(ITERATIONS),1000))"
-	k6 run -e METHOD=$(or $(METHOD),pessimistic) -e VUS=$(or $(VUS),100) -e ITERATIONS=$(or $(ITERATIONS),1000) k6-scripts/capacity.js
+	$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) -e VUS=$(or $(VUS),100) -e ITERATIONS=$(or $(ITERATIONS),1000) /scripts/capacity.js
 
-# Contention Test (경합/안정성 측정)
+# Contention Test (경합/안정성 측정 - Large Scale)
 # Usage: make test-contention METHOD=lua-script VUS=5000 DURATION=30s
-test-contention: warmup
-	@echo "🚀 Starting Contention Test (METHOD=$(or $(METHOD),pessimistic), VUS=$(or $(VUS),1000), DUR=$(or $(DURATION),30s))"
-	k6 run -e METHOD=$(or $(METHOD),pessimistic) -e VUS=$(or $(VUS),1000) -e DURATION=$(or $(DURATION),30s) k6-scripts/contention.js
+test-contention:
+	@echo "🏗️  Scaling up infrastructure for 5,000 VUs (AWS t3.xlarge equivalent)..."
+	docker compose down -v
+	docker compose -f docker-compose.yml -f docker-compose.large.yml up -d
+	@echo "⏳ Waiting for infrastructure to stabilize (15s)..."
+	sleep 15
+	@echo "🔥 Warming up (200 iters)..."
+	@$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) /scripts/warmup.js > /dev/null 2>&1
+	@echo "✅ Warm-up Done"
+	@make reset
+	@echo "🚀 Starting Contention Test (METHOD=$(or $(METHOD),pessimistic), VUS=$(or $(VUS),5000), DUR=$(or $(DURATION),30s))"
+	$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) -e VUS=$(or $(VUS),5000) -e DURATION=$(or $(DURATION),30s) /scripts/contention.js
 
 # Stress Test (한계 탐색)
 # Usage: make test-stress METHOD=lua-script TARGET_RPS=2000
 test-stress: warmup
 	@echo "🚀 Starting Stress Test (METHOD=$(or $(METHOD),pessimistic), TARGET_RPS=$(or $(TARGET_RPS),2000))"
-	k6 run -e METHOD=$(or $(METHOD),pessimistic) -e TARGET_RPS=$(or $(TARGET_RPS),2000) k6-scripts/stress.js
+	$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) -e TARGET_RPS=$(or $(TARGET_RPS),2000) /scripts/stress.js
