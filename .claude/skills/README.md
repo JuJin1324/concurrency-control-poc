@@ -8,7 +8,7 @@
 **명령어:** `/sprint-start`
 
 새로운 Sprint를 시작하고 계획을 생성합니다.
-- brainstorm.md 기반으로 Sprint Goal과 Tasks 제안
+- 🎯 `docs/planning/how-diagram.md`의 Phase를 Sprint로 타임박싱
 - 사용자 검토 후 공식 Sprint 시작
 - `.agile/sprints/sprint-N/plan.md` 생성
 
@@ -34,9 +34,11 @@ Sprint를 완료하고 회고를 작성합니다.
 ```bash
 /sprint-start
 ```
-1. AI가 brainstorm.md 기반으로 Sprint 계획 초안 생성
+1. AI가 `docs/planning/how-diagram.md`의 Phase를 Sprint로 타임박싱하여 계획 초안 생성
 2. 사용자가 초안을 검토하고 수정
 3. 확정 후 공식 Sprint 시작
+
+**AI의 역할:** Phase (논리적 단계) → Sprint (시간 단위 실행 박스) 변환
 
 ### 진행 상황 확인
 ```bash
