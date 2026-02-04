@@ -25,6 +25,17 @@ public class Product {
 ### 1.2 예외 처리
 충돌 발생 시 Spring Data JPA는 `ObjectOptimisticLockingFailureException`을 던집니다. 이를 잡아서 처리해야 합니다.
 
+### 1.3 주의사항: Bulk Update와 @Version의 배신
+Spring Data JPA의 모든 버전에서 **JPQL/SQL Bulk Update(`@Modifying`)**는 영속성 컨텍스트를 우회하여 직접 DB에 쿼리를 날립니다. 따라서 JPA의 Dirty Checking 기능인 `@Version` 자동 증가가 **구조적으로 동작하지 않습니다.**
+
+*   **위험:** 수동으로 버전을 올리지 않으면, 버전이 그대로 유지되어 다른 트랜잭션이 변경 사실을 모르고 데이터를 덮어쓰는 **갱신 손실(Lost Update)**이 발생합니다.
+*   **필수 조치:** 쿼리 내에서 반드시 **수동으로 버전을 증가**시켜야 합니다. (선택이 아닌 필수)
+    ```java
+    @Modifying
+    @Query("UPDATE Product p SET p.price = :price, p.version = p.version + 1 WHERE p.id = :id")
+    void updatePrice(@Param("id") Long id, @Param("price") Long price);
+    ```
+
 ---
 
 ## 2. AOP 기반의 Retry 구현 (Best Practice)
@@ -85,3 +96,25 @@ public class InventoryService {
     }
 }
 ```
+
+---
+
+## 3. Advanced Implementation Tips (실전 꿀팁)
+
+### 3.1 Retry 소진 시 후속 처리 (DLQ)
+API 요청이라면 에러 응답을 주면 되지만, **비동기 컨슈머(Kafka, RabbitMQ)**에서 재시도가 모두 실패하면 어떻게 해야 할까요?
+*   **Action:** 무한 루프를 방지하기 위해 예외를 삼키고, 해당 메시지를 **Dead Letter Queue(DLQ)**나 **FailedJob 테이블**로 옮겨서 운영자가 나중에 수동으로 처리할 수 있게 해야 합니다.
+
+### 3.2 Spring AOP의 함정: Self-Invocation
+`@OptimisticRetry`는 Spring AOP(Proxy) 기반으로 동작합니다.
+*   **문제:** 같은 클래스 내부의 메서드(`this.decreaseStock()`)를 호출하면 프록시를 거치지 않아 **재시도 로직이 동작하지 않습니다.**
+*   **해결:** 반드시 **외부 클래스(Controller, Facade)**에서 호출하거나, 구조적으로 분리해야 합니다.
+
+### 3.3 부모 버전 강제 증가 (Force Increment)
+DDD의 애그리거트(Aggregate) 패턴에서, 자식 엔티티(`OrderItem`)만 수정되고 부모(`Order`)는 그대로일 때 부모의 버전이 올라가지 않는 문제가 있습니다.
+*   **해결:** `LockModeType.OPTIMISTIC_FORCE_INCREMENT`를 사용하여 **"자식이 변하면 부모의 버전도 강제로 올려라"**고 명시해야, 애그리거트 전체의 정합성이 유지됩니다.
+    ```java
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+    @Query("SELECT o FROM Order o WHERE o.id = :id")
+    Optional<Order> findByIdWithForceIncrement(@Param("id") Long id);
+    ```
