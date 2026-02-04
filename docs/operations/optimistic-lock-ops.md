@@ -1,7 +1,7 @@
 # [Ops] Optimistic Lock 운영 가이드 (Hub)
 
 **작성일:** 2026-02-03
-**Update:** Initial Hub & Spoke
+**Update:** Hub & Spoke 구조 적용
 **목적:** 낙관적 락(Optimistic Lock)의 올바른 사용법, 재시도 폭풍 방지 전략, 그리고 사용자 경험(UX) 최적화 노하우를 집대성한 가이드.
 
 ---
@@ -30,21 +30,25 @@
 ### 🏛️ [Architecture Patterns](./optimistic/architecture.md)
 *   **Airbnb:** 재시도 폭풍을 막기 위한 **Soft Holds (Redis)** 하이브리드 전략.
 *   **Notion:** 페이지 단위가 아닌 **Block 단위 락킹**으로 충돌 확률을 0에 가깝게 낮춘 비결.
-*   **GitHub:** 무중단 스키마 마이그레이션을 위한 **Optimistic Verification**.
+*   **Confluence:** 충돌 시 **자동 병합(Auto-Merge)**과 **충돌 해결 마법사**를 제공하는 UX 전략.
+*   **Salesforce:** API 레벨에서 **HTTP 409 Conflict**를 표준화하고 클라이언트 재시도를 유도하는 법.
+*   **Booking.com:** 읽기는 낙관적(Read Optimistic), 쓰기는 비관적(Write Pessimistic)으로 분리한 비즈니스 타협.
 
 ### ⚙️ [Mechanics & Internals](./optimistic/mechanics.md)
 *   **CAS (Compare-And-Swap):** 하드웨어 원리를 SQL로 구현한 `WHERE version = ?`.
-*   **Lost Update:** 갱신 손실을 어떻게 막는가?
+*   **Lost Update:** 갱신 손실을 막기 위해 Alice와 Bob의 시나리오 분석.
 *   **ABA Problem:** 단순 값 비교가 아닌 **Version(단조 증가)**이 필요한 이유.
 
 ### 🚨 [Troubleshooting & Checklists](./optimistic/troubleshooting.md)
 *   **Retry Strategy:** `while(true)`는 금지. **Exponential Backoff**와 **Jitter(무작위 대기)** 필수.
+*   **Exit Strategy:** 무한 재시도 대신 **Fail-Fast**하거나 **비관적 락으로 전환(Pivot)**하는 기준.
 *   **Monitoring:** 충돌률(**Failure Rate**)이 **1~5%**를 넘으면 아키텍처를 재검토해야 한다.
-*   **UX:** Silent Retry vs Auto-Merge vs User Intervention (사용자에게 알리기).
+*   **UX Guide:** Silent Retry vs Auto-Merge vs Diff View (Git 스타일 비교).
 
 ### 💻 [Implementation Guide](./optimistic/implementation.md)
-*   **JPA:** `@Version` 어노테이션의 동작 원리.
-*   **AOP Retry:** 비즈니스 로직을 더럽히지 않고 깔끔하게 재시도를 구현하는 **Aspect** 코드 예시.
+*   **JPA:** `@Version` 어노테이션과 **Bulk Update 시의 함정(수동 버전 증가)**.
+*   **AOP Retry:** 비즈니스 로직을 오염시키지 않는 **Aspect** 기반 재시도 구현.
+*   **Manual Retry:** 사용자 의도가 중요한 로직(결제 등)에서의 **Controller 레벨 수동 처리** 패턴.
 
 ---
 

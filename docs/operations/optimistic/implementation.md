@@ -38,7 +38,7 @@ Spring Data JPA의 모든 버전에서 **JPQL/SQL Bulk Update(`@Modifying`)**는
 
 ---
 
-## 2. AOP 기반의 Retry 구현 (Best Practice)
+## 2. AOP 기반의 Retry 구현 (Auto-Retry)
 
 비즈니스 로직에 `try-catch-retry`가 섞이면 코드가 지저분해집니다. AOP로 깔끔하게 분리하십시오.
 
@@ -99,18 +99,40 @@ public class InventoryService {
 
 ---
 
-## 3. Advanced Implementation Tips (실전 꿀팁)
+## 3. 수동 재시도 패턴 (Manual Retry) - 중요!
 
-### 3.1 Retry 소진 시 후속 처리 (DLQ)
+**주의:** 모든 로직에 자동 재시도를 적용하는 것은 위험합니다. 쇼핑몰 주문이나 결제처럼 **"사용자의 의도 확인"**이 중요한 로직에서는 자동 재시도 중에 가격이나 조건이 변할 수 있기 때문입니다.
+
+이럴 땐 AOP 대신 **Controller 레벨에서 예외를 잡고, 클라이언트에게 판단을 위임**해야 합니다.
+
+```java
+@PostMapping("/products/{id}")
+public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto dto) {
+    try {
+        service.update(id, dto);
+        return ResponseEntity.ok().build();
+    } catch (ObjectOptimisticLockingFailureException e) {
+        // 서버가 재시도하지 않고, 클라이언트에게 명확한 상태 코드(409)를 반환
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse("Conflict", "누군가 먼저 수정했습니다. 최신 데이터를 확인 후 다시 시도하세요."));
+    }
+}
+```
+
+---
+
+## 4. Advanced Implementation Tips (실전 꿀팁)
+
+### 4.1 Retry 소진 시 후속 처리 (DLQ)
 API 요청이라면 에러 응답을 주면 되지만, **비동기 컨슈머(Kafka, RabbitMQ)**에서 재시도가 모두 실패하면 어떻게 해야 할까요?
 *   **Action:** 무한 루프를 방지하기 위해 예외를 삼키고, 해당 메시지를 **Dead Letter Queue(DLQ)**나 **FailedJob 테이블**로 옮겨서 운영자가 나중에 수동으로 처리할 수 있게 해야 합니다.
 
-### 3.2 Spring AOP의 함정: Self-Invocation
+### 4.2 Spring AOP의 함정: Self-Invocation
 `@OptimisticRetry`는 Spring AOP(Proxy) 기반으로 동작합니다.
 *   **문제:** 같은 클래스 내부의 메서드(`this.decreaseStock()`)를 호출하면 프록시를 거치지 않아 **재시도 로직이 동작하지 않습니다.**
 *   **해결:** 반드시 **외부 클래스(Controller, Facade)**에서 호출하거나, 구조적으로 분리해야 합니다.
 
-### 3.3 부모 버전 강제 증가 (Force Increment)
+### 4.3 부모 버전 강제 증가 (Force Increment)
 DDD의 애그리거트(Aggregate) 패턴에서, 자식 엔티티(`OrderItem`)만 수정되고 부모(`Order`)는 그대로일 때 부모의 버전이 올라가지 않는 문제가 있습니다.
 *   **해결:** `LockModeType.OPTIMISTIC_FORCE_INCREMENT`를 사용하여 **"자식이 변하면 부모의 버전도 강제로 올려라"**고 명시해야, 애그리거트 전체의 정합성이 유지됩니다.
     ```java
