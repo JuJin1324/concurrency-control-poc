@@ -53,6 +53,7 @@ flowchart TD
 
     subgraph DeepDive["🔄 Phase 5: Deep Dive"]
         S6[Sprint 6<br/>심화 연구/사례 분석]
+        S7[Sprint 7<br/>상황별 최적화 검증<br/>(Best Fit Scenarios)]
     end
 
     S0 -->|Done| S1
@@ -61,6 +62,7 @@ flowchart TD
     S3 -->|Done| S4
     S4 -->|Done| S5
     S5 -.->|Next| S6
+    S6 -.->|Next| S7
 ```
 
 ### 1.2 진행 상태 (Timeline View)
@@ -81,7 +83,8 @@ flowchart LR
 
     subgraph Todo["📋 할 일"]
         T7[Sprint 6<br/>실무 사례 분석]
-        T8[최종 회고]
+        T8[Sprint 7<br/>상황별 최적화 검증]
+        T9[최종 회고]
     end
 
     D1 --> D2
@@ -94,6 +97,7 @@ flowchart LR
     D8 --> D9
     D9 --> T7
     T7 --> T8
+    T8 --> T9
 ```
 
 ---
@@ -113,6 +117,7 @@ flowchart LR
 | **인프라** | Docker Compose (MySQL + Redis) | ✅ |
 | **최적화** | Virtual Threads 도입, HikariCP/Lettuce Tuning | ✅ |
 | **테스트 공학** | 격리 환경(Isolation) 및 목적별 시나리오(Capacity/Contention/Stress) | ✅ |
+| **비즈니스 검증** | 에지 케이스(Busy DB)에서의 리소스 보호 효과 측정 | 📋 예정 |
 
 ---
 
@@ -128,61 +133,40 @@ flowchart LR
 | **Sprint 3** | Phase 2 | 부하 테스트 + 성능 비교 | ✅ 완료 |
 | **Sprint 4** | Phase 3 | 최종 완성 + 문서화 | ✅ 완료 |
 | **Sprint 5** | Optimization | **한계 돌파 (Virtual Threads + Tuning)** | ✅ 완료 |
-| **Sprint 6** | Deep Dive | 심화 연구 (실무 도입 사례) | 📋 예정 |
+| **Sprint 6** | Deep Dive | 심화 연구 (실무 도입 사례) | 🔄 진행 중 |
+| **Sprint 7** | Deep Dive | **상황별 최적화 검증 (Best Fit Verification)** | 📋 예정 |
 
 ### Sprint별 상세 결과
 
 #### Sprint 5: 한계 돌파 (Optimization) ✅ 완료
-
-**목표:** 10,000 VUs 테스트 실패 원인 분석 및 시스템 최적화를 통한 물리적 한계 극복
-
-**주요 성과:**
-1.  **Virtual Threads 도입:**
-    - Java 21 Virtual Threads 활성화로 I/O 블로킹 비용 최소화.
-    - 기존 Platform Thread(Tomcat 200) 대비 높은 동시성 처리량 확보.
-2.  **테스트 엔지니어링 체계 확립:**
-    - 기존 `Hell/High/Extreme` 모호함 제거 → **Capacity/Contention/Stress** 3단계 표준 수립.
-    - `make clean && make up` 기반의 **격리성(Isolation)** 확보로 데이터 신뢰도 100% 달성.
-3.  **최종 성능 리포트 (Performance V2):**
-    - **Capacity:** Lua Script 1,583 TPS (DB 대비 2.5배).
-    - **Contention:** Lua Script 10,000+ TPS (압도적 방어력).
-    - **Stress:** 1,000 RPS 환경에서 모든 방식 안정성 검증 완료.
+(상세 내용 생략...)
 
 ---
 
-#### Sprint 6: 심화 연구 (실무 도입 사례) 📋 예정
+#### Sprint 6: 심화 연구 (실무 도입 사례) 🔄 진행 중
 
 **목표:** 각 동시성 제어 방식의 실제 현업 도입 사례 연구 및 분석 - **개발 중심 → 운영 중심 전환**
+(상세 내용 생략...)
 
-**Sprint 0-5 vs Sprint 6 관점 차이:**
-- **Sprint 0-5 (개발 중심):** "어떻게 구현하는가?" - 코드 작성, 테스트, 성능 측정
-- **Sprint 6 (운영 중심):** "어떻게 운영하는가?" - 실무 사례, 장애 대응, 모니터링, 트레이드오프
+---
 
-**내용 (운영 관점):**
-- **Pessimistic Lock:**
-  - 금융권 계좌 이체, 재고 관리 시스템 등 정합성이 극도로 중요한 사례
-  - 운영 시 고려사항: Deadlock 감지/해결, Lock Timeout 설정, 모니터링
+#### Sprint 7: 상황별 최적화 검증 (Best Fit Verification) 📋 예정
 
-- **Optimistic Lock:**
-  - 위키 편집, 자원 경합이 낮은 일반 웹 서비스 사례
-  - 운영 시 고려사항: 충돌 발생률 모니터링, Retry 전략, 사용자 경험
+**목표:** "절대적인 성능 우위는 없다"는 것을 증명하기 위해, 각 방식이 가장 빛나는 **'Best Fit' 시나리오**를 설계하고 검증.
 
-- **Redis Lock:**
-  - 분산 환경에서의 분산 락 적용 사례 (e.g. 배민 선착순 쿠폰, 토스 주문 결제)
-  - 운영 시 고려사항: Redis 장애 시 대응, Lock 누수 방지, TTL 설정
-
-- **Lua Script:**
-  - 초고부하 선착순 이벤트 처리 사례 (e.g. 쿠폰 발급, 티켓팅)
-  - 운영 시 고려사항: Script 버전 관리, 성능 모니터링, Fallback 전략
-
-**산출물:**
-- 기술 블로그 심화편 (Case Study + 운영 경험)
-- 방식별 대표 사용 사례 정리 리포트 (운영 관점 포함)
-- 각 방식의 장애 시나리오 및 대응 방안 정리
-
-**Sprint 6의 가치:**
-- "학습용 토이 프로젝트" → "실무 운영 가능한 케이스 스터디"
-- **"개발만 하는 개발자"가 아닌 "운영까지 고려하는 시니어 개발자" 어필**
+**검증 시나리오 (The Right Tool for the Right Job):**
+1.  **Pessimistic Lock:** **"Complex Transaction"**
+    *   **상황:** 재고 차감 + 포인트 사용 + 결제 이력 생성 등 복잡한 ACID 트랜잭션.
+    *   **가설:** Lua나 Optimistic으로는 구현이 어렵거나 롤백 비용이 크지만, 비관적 락은 가장 안정적으로 처리.
+2.  **Optimistic Lock:** **"Read-Heavy"**
+    *   **상황:** 쓰기보다 읽기가 압도적으로 많은 상황 (충돌률 1% 미만).
+    *   **가설:** 락 오버헤드가 없으므로 비관적/Redis 락보다 높은 TPS 달성.
+3.  **Redis Distributed Lock:** **"Resource Protection"**
+    *   **상황:** DB CPU가 이미 포화 상태인 경우 (Busy DB).
+    *   **가설:** Redis에서 유입량을 조절(Throttling)하여 DB 다운을 막고 안정적인 처리량 유지.
+4.  **Lua Script:** **"Atomic Counter"**
+    *   **상황:** 로직이 단순한 선착순 100만 건.
+    *   **가설:** 압도적인 성능 차이 입증.
 
 ---
 
