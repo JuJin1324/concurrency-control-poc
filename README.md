@@ -80,16 +80,46 @@ flowchart LR
 
 ---
 
-## 🚀 실무 도입 가이드 (Recommendation)
+## 🛡️ 운영 관점의 고찰 (Engineering Insights)
 
-테스트 결과를 바탕으로 상황별 최적의 기술을 제안합니다.
+단순한 구현을 넘어, 실제 서비스 환경에서의 **트레이드오프(Trade-off)**와 **장애 대응**을 심층 연구했습니다. (상세: [Practical Guide](docs/operations/PRACTICAL_GUIDE.md))
 
-1.  **초고부하 핫딜 (티켓팅):** 👉 **Lua Script**
-    - 고민할 필요 없이 Lua Script를 사용하세요. 인프라 비용 대비 최고의 효율을 냅니다.
-2.  **일반적인 주문/결제:** 👉 **Pessimistic Lock**
-    - 트래픽이 예측 가능하고 데이터 정합성이 중요하다면, DB 락이 가장 구현하기 쉽고 확실한 방법입니다.
-3.  **충돌이 적은 수정 요청:** 👉 **Optimistic Lock**
-    - 동시 수정이 드문 게시판이나 정보 수정에는 낙관적 락이 가볍고 빠릅니다.
+### 2.1 실무 의사결정 가이드 (Decision Tree)
+상황에 맞는 최적의 동시성 제어 도구를 선택하는 가이드라인입니다.
+
+```mermaid
+flowchart TD
+    Start([🚀 선택 시작]) --> Q1{충돌 발생 시<br/>재시도가 자유롭고<br/>비용이 적은가?}
+    
+    Q1 -- "YES - 재시도 OK" --> Optimistic["⚡ Optimistic Lock<br/>낙관적 락"]
+    Q1 -- "NO - 한 번에 성공해야 함" --> Q2{트래픽이 순간적으로<br/>폭주하는가?}
+    
+    Q2 -- "NO - 일반적 트래픽" --> Pessimistic["🔒 Pessimistic Lock<br/>비관적 락"]
+    Q2 -- "YES - 고트래픽/핫스팟" --> Q3{비즈니스 로직이<br/>단순한가?}
+    
+    Q3 -- "YES - 단순 연산" --> LuaScript["🏎️ Redis Lua Script<br/>원자적 실행"]
+    Q3 -- "NO - 복잡/외부연동" --> RedisLock["🛡️ Redis Distributed Lock<br/>분산 락"]
+    
+    Optimistic --> Result1["✅ 장점: 락 비용 Zero<br/>⚠️ 조건: 충돌 드물어야 함"]
+    Pessimistic --> Result2["✅ 장점: 정합성 최고<br/>⚠️ 조건: DB 부하 감당"]
+    LuaScript --> Result3["✅ 장점: 극한의 TPS<br/>⚠️ 조건: 로직 간결 & Hot Key"]
+    RedisLock --> Result4["✅ 장점: DB 보호 & 제어<br/>💡 팁: 하이브리드 전략 가능"]
+```
+
+### 2.2 상세 운영 가이드 (Ops Guides)
+*   **[Pessimistic Lock 가이드](docs/operations/pessimistic-lock-ops.md):** DB 인덱스 락의 원리와 데드락 방지 전략.
+*   **[Optimistic Lock 가이드](docs/operations/optimistic-lock-ops.md):** 재시도 폭풍($O(N^2)$) 방지와 UX 패턴 분석.
+*   **[Redis Distributed Lock 가이드](docs/operations/redis-lock-ops.md):** Throttling을 통한 DB 보호 및 3단계 Fallback.
+*   **[Lua Script 가이드](docs/operations/lua-script-ops.md):** 성능의 경제학(Trust vs UX)과 벌크헤드(Bulkhead) 격리.
+
+---
+
+## 🚀 프로젝트 마일스톤 (Milestones)
+
+- [x] **Sprint 0-2:** 4가지 동시성 제어 방식 구현 및 인프라 구축
+- [x] **Sprint 3-5:** k6 기반 부하 테스트 및 한계 돌파 (Virtual Threads 최적화)
+- [x] **Sprint 6:** **심화 연구 (Deep Dive)** - 실무 사례 분석 및 운영 가이드 집대성
+- [ ] **Sprint 7 (Upcoming):** **상황별 최적화 검증** - 각 방식의 'Best Fit' 시나리오 실제 증명
 
 ---
 
