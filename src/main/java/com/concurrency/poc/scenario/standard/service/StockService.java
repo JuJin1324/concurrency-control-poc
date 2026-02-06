@@ -1,6 +1,6 @@
-package com.concurrency.poc.service;
+package com.concurrency.poc.scenario.standard.service;
 
-import com.concurrency.poc.dto.StockResponse;
+import com.concurrency.poc.core.dto.StockResponse;
 
 public interface StockService {
 

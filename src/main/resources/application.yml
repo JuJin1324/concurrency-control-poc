@@ -15,8 +15,8 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:app_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 50
-      minimum-idle: 50
+      maximum-pool-size: 10
+      minimum-idle: 10
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}

@@ -1,4 +1,4 @@
-package com.concurrency.poc.domain;
+package com.concurrency.poc.core.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

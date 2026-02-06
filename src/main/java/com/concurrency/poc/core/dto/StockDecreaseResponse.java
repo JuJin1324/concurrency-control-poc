@@ -1,4 +1,4 @@
-package com.concurrency.poc.dto;
+package com.concurrency.poc.core.dto;
 
 public record StockDecreaseResponse(
         boolean success,

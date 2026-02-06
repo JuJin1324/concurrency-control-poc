@@ -1,7 +1,7 @@
 package com.concurrency.poc.service;
 
-import com.concurrency.poc.domain.Stock;
-import com.concurrency.poc.repository.StockRepository;
+import com.concurrency.poc.core.domain.Stock;
+import com.concurrency.poc.core.repository.StockRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

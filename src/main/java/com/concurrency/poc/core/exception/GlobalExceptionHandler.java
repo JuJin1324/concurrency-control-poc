@@ -1,7 +1,7 @@
-package com.concurrency.poc.controller;
+package com.concurrency.poc.core.exception;
 
-import com.concurrency.poc.domain.InsufficientStockException;
-import com.concurrency.poc.domain.StockNotFoundException;
+import com.concurrency.poc.core.domain.InsufficientStockException;
+import com.concurrency.poc.core.domain.StockNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

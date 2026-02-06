@@ -1,7 +1,7 @@
 package com.concurrency.poc.fixtures;
 
-import com.concurrency.poc.domain.Stock;
-import com.concurrency.poc.repository.StockRepository;
+import com.concurrency.poc.core.domain.Stock;
+import com.concurrency.poc.core.repository.StockRepository;
 
 /**
  * Stock 엔티티 생성을 위한 Test Fixture

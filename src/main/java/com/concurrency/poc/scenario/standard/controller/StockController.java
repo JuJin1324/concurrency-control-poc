@@ -1,9 +1,9 @@
-package com.concurrency.poc.controller;
+package com.concurrency.poc.scenario.standard.controller;
 
-import com.concurrency.poc.dto.StockDecreaseRequest;
-import com.concurrency.poc.dto.StockDecreaseResponse;
-import com.concurrency.poc.dto.StockResponse;
-import com.concurrency.poc.service.StockService;
+import com.concurrency.poc.core.dto.StockDecreaseRequest;
+import com.concurrency.poc.core.dto.StockDecreaseResponse;
+import com.concurrency.poc.core.dto.StockResponse;
+import com.concurrency.poc.scenario.standard.service.StockService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

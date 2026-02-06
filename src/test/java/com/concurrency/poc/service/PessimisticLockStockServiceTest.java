@@ -1,10 +1,10 @@
 package com.concurrency.poc.service;
 
-import com.concurrency.poc.domain.Stock;
+import com.concurrency.poc.core.domain.Stock;
 import com.concurrency.poc.fixtures.ConcurrencyTestSupport;
 import com.concurrency.poc.fixtures.ConcurrencyTestSupport.ConcurrencyTestConfig;
 import com.concurrency.poc.fixtures.ConcurrencyTestSupport.ConcurrencyTestResult;
-import com.concurrency.poc.repository.StockRepository;
+import com.concurrency.poc.core.repository.StockRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

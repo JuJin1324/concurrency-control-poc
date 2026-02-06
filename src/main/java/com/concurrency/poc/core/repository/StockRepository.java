@@ -1,6 +1,6 @@
-package com.concurrency.poc.repository;
+package com.concurrency.poc.core.repository;
 
-import com.concurrency.poc.domain.Stock;
+import com.concurrency.poc.core.domain.Stock;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

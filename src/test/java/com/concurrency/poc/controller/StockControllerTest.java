@@ -1,8 +1,8 @@
 package com.concurrency.poc.controller;
 
-import com.concurrency.poc.domain.Stock;
-import com.concurrency.poc.repository.StockRepository;
-import com.concurrency.poc.service.LuaScriptStockService;
+import com.concurrency.poc.core.domain.Stock;
+import com.concurrency.poc.core.repository.StockRepository;
+import com.concurrency.poc.scenario.standard.service.LuaScriptStockService;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

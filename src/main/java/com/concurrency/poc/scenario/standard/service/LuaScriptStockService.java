@@ -1,10 +1,10 @@
-package com.concurrency.poc.service;
+package com.concurrency.poc.scenario.standard.service;
 
-import com.concurrency.poc.domain.InsufficientStockException;
-import com.concurrency.poc.domain.Stock;
-import com.concurrency.poc.domain.StockNotFoundException;
-import com.concurrency.poc.dto.StockResponse;
-import com.concurrency.poc.repository.StockRepository;
+import com.concurrency.poc.core.domain.InsufficientStockException;
+import com.concurrency.poc.core.domain.Stock;
+import com.concurrency.poc.core.domain.StockNotFoundException;
+import com.concurrency.poc.core.dto.StockResponse;
+import com.concurrency.poc.core.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;

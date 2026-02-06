@@ -1,4 +1,4 @@
-package com.concurrency.poc.domain;
+package com.concurrency.poc.core.domain;
 
 public class InsufficientStockException extends RuntimeException {
 

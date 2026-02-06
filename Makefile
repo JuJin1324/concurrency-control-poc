@@ -1,4 +1,4 @@
-.PHONY: build up down ps logs clean mysql redis reset reset-1k reset-10k show-db show-redis warmup stats test-capacity test-contention test-stress
+.PHONY: build up down ps logs clean mysql redis reset reset-100 reset-products reset-1k reset-10k show-db show-redis warmup stats test-capacity test-contention test-stress test-low-contention test-collision-rate
 
 # 애플리케이션 빌드 및 이미지 생성
 build:
@@ -44,6 +44,20 @@ reset:
 	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 100);" 2>/dev/null
 	@docker compose exec redis redis-cli set stock:1 100 > /dev/null
 	@echo "🔄 Reset: Stock = 100"
+
+# 데이터 리셋 (100개 상품, 각 재고 100개씩 - Low Contention Scenario)
+reset-100:
+	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 100), ('PRODUCT-002', 100), ('PRODUCT-003', 100), ('PRODUCT-004', 100), ('PRODUCT-005', 100), ('PRODUCT-006', 100), ('PRODUCT-007', 100), ('PRODUCT-008', 100), ('PRODUCT-009', 100), ('PRODUCT-010', 100), ('PRODUCT-011', 100), ('PRODUCT-012', 100), ('PRODUCT-013', 100), ('PRODUCT-014', 100), ('PRODUCT-015', 100), ('PRODUCT-016', 100), ('PRODUCT-017', 100), ('PRODUCT-018', 100), ('PRODUCT-019', 100), ('PRODUCT-020', 100), ('PRODUCT-021', 100), ('PRODUCT-022', 100), ('PRODUCT-023', 100), ('PRODUCT-024', 100), ('PRODUCT-025', 100), ('PRODUCT-026', 100), ('PRODUCT-027', 100), ('PRODUCT-028', 100), ('PRODUCT-029', 100), ('PRODUCT-030', 100), ('PRODUCT-031', 100), ('PRODUCT-032', 100), ('PRODUCT-033', 100), ('PRODUCT-034', 100), ('PRODUCT-035', 100), ('PRODUCT-036', 100), ('PRODUCT-037', 100), ('PRODUCT-038', 100), ('PRODUCT-039', 100), ('PRODUCT-040', 100), ('PRODUCT-041', 100), ('PRODUCT-042', 100), ('PRODUCT-043', 100), ('PRODUCT-044', 100), ('PRODUCT-045', 100), ('PRODUCT-046', 100), ('PRODUCT-047', 100), ('PRODUCT-048', 100), ('PRODUCT-049', 100), ('PRODUCT-050', 100), ('PRODUCT-051', 100), ('PRODUCT-052', 100), ('PRODUCT-053', 100), ('PRODUCT-054', 100), ('PRODUCT-055', 100), ('PRODUCT-056', 100), ('PRODUCT-057', 100), ('PRODUCT-058', 100), ('PRODUCT-059', 100), ('PRODUCT-060', 100), ('PRODUCT-061', 100), ('PRODUCT-062', 100), ('PRODUCT-063', 100), ('PRODUCT-064', 100), ('PRODUCT-065', 100), ('PRODUCT-066', 100), ('PRODUCT-067', 100), ('PRODUCT-068', 100), ('PRODUCT-069', 100), ('PRODUCT-070', 100), ('PRODUCT-071', 100), ('PRODUCT-072', 100), ('PRODUCT-073', 100), ('PRODUCT-074', 100), ('PRODUCT-075', 100), ('PRODUCT-076', 100), ('PRODUCT-077', 100), ('PRODUCT-078', 100), ('PRODUCT-079', 100), ('PRODUCT-080', 100), ('PRODUCT-081', 100), ('PRODUCT-082', 100), ('PRODUCT-083', 100), ('PRODUCT-084', 100), ('PRODUCT-085', 100), ('PRODUCT-086', 100), ('PRODUCT-087', 100), ('PRODUCT-088', 100), ('PRODUCT-089', 100), ('PRODUCT-090', 100), ('PRODUCT-091', 100), ('PRODUCT-092', 100), ('PRODUCT-093', 100), ('PRODUCT-094', 100), ('PRODUCT-095', 100), ('PRODUCT-096', 100), ('PRODUCT-097', 100), ('PRODUCT-098', 100), ('PRODUCT-099', 100), ('PRODUCT-100', 100);" 2>/dev/null
+	@echo "🔄 Reset: 100 products, each with stock = 100"
+
+# 데이터 리셋 (N개 상품 - 충돌률 조절용)
+# Usage: make reset-products PRODUCTS=20 QUANTITY=20000
+reset-products:
+	@PRODUCTS=$(or $(PRODUCTS),10); \
+	QUANTITY=$(or $(QUANTITY),100); \
+	VALUES=$$(for i in $$(seq 1 $$PRODUCTS); do printf "('PRODUCT-%03d', $$QUANTITY)" $$i; [ $$i -lt $$PRODUCTS ] && printf ", "; done); \
+	docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES $$VALUES;" 2>/dev/null
+	@echo "🔄 Reset: $(or $(PRODUCTS),10) products, each with stock = $(or $(QUANTITY),100)"
 
 # 데이터 리셋 (1,000개 - High Load)
 reset-1k:
@@ -107,3 +121,33 @@ test-contention:
 test-stress: warmup
 	@echo "🚀 Starting Stress Test (METHOD=$(or $(METHOD),pessimistic), TARGET_RPS=$(or $(TARGET_RPS),2000))"
 	$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) -e TARGET_RPS=$(or $(TARGET_RPS),2000) /scripts/stress.js
+
+# Best Fit Scenario 1: Complex Transaction (Pessimistic)
+test-complex-transaction: warmup
+	@make reset-products PRODUCTS=5 QUANTITY=10000
+	@echo "🚀 Starting Complex Transaction Scenario (Pessimistic)"
+	$(K6_CMD) /scripts/1-complex-transaction.js
+
+# 인프라 완전 재시작 (격리된 테스트 환경 보장)
+reset-infra:
+	@echo "🧹 Cleaning up infrastructure..."
+	@docker compose down -v > /dev/null 2>&1
+	@echo "🏗️  Starting fresh infrastructure..."
+	@docker compose up -d > /dev/null 2>&1
+	@echo "⏳ Waiting for DB to be ready..."
+	@sleep 10
+
+# Low Contention Test (Scenario 2)
+# Usage: make test-low-contention METHOD=optimistic PRODUCTS=50 VUS=300
+test-low-contention: reset-infra warmup
+	@make reset-products PRODUCTS=$(or $(PRODUCTS),100) QUANTITY=20000
+	@echo "🚀 Starting Low Contention Test (METHOD=$(or $(METHOD),optimistic), PRODUCTS=$(or $(PRODUCTS),100), VUS=$(or $(VUS),100))"
+	$(K6_CMD) -e METHOD=$(or $(METHOD),optimistic) -e PRODUCT_COUNT=$(or $(PRODUCTS),100) -e VUS=$(or $(VUS),100) /scripts/2-low-contention.js
+
+# Legacy Low Contention Test (Sprint 1-6)
+test-low-contention-v1: warmup
+	@make reset-100
+	@echo "🚀 Starting Legacy Low Contention Test"
+	$(K6_CMD) -e METHOD=$(or $(METHOD),optimistic) -e VUS=$(or $(VUS),1000) -e ITERATIONS=$(or $(ITERATIONS),1000) /scripts/2-low-contention.js
+
+
