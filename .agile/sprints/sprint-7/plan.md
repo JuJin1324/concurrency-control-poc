@@ -38,7 +38,7 @@
 |----------|-------------|-----------|-----------|-------------|
 | **1. Complex Transaction** | 🛡️ 안정성 | Pessimistic vs Optimistic | Rollback Count | Pessimistic |
 | **2. Low Contention Update** | ⚡ 성능 | Optimistic vs Pessimistic | TPS, Retry Count | Optimistic |
-| **3. Resource Protection** | 🏥 회복력 | Redis Lock vs DB Locks | System Uptime | Redis Lock |
+| **3. The Alliance** | 🏥 확장성 | 연합군(Redis+Optimistic) vs 전사(Pessimistic) | Connection Usage | Redis+Optimistic |
 | **4. Atomic Counter** | 🚀 극한 성능 | 기존 Sprint 5 데이터 활용 | TPS | Lua Script |
 
 **효율성:**
@@ -81,25 +81,25 @@
 **목표:** Pessimistic Lock과 Optimistic Lock의 Best Fit 시나리오를 구현하고 검증한다.
 
 #### US-7.3: Pessimistic Lock - "Complex Transaction" 구현
-- [ ] 복합 트랜잭션 시나리오 구현
+- [x] 복합 트랜잭션 시나리오 구현
   - 재고 차감 + 포인트 사용 + 결제 이력 생성
   - ACID 보장 및 롤백 처리
-- [ ] k6 테스트 스크립트 작성
-- [ ] 성능 측정 및 결과 분석
-- [ ] 가설 검증: "복잡한 트랜잭션에서는 Pessimistic이 가장 안정적"
+- [x] k6 테스트 스크립트 작성
+- [x] 성능 측정 및 결과 분석
+- [x] 가설 검증: "복잡한 트랜잭션에서는 Pessimistic이 가장 안정적"
 
 **Acceptance Criteria:**
 - 복합 트랜잭션에서 Pessimistic이 타 방식 대비 안정성 우위 증명
 - 롤백 비용 비교 데이터 확보
 
 #### US-7.4: Optimistic Lock - "Low Contention Update" 구현
-- [ ] 분산 업데이트 시나리오 구현
+- [x] 분산 업데이트 시나리오 구현
   - 100개 상품, 1000명이 랜덤하게 구매
   - 충돌률 1-5% (일부 인기 상품에서만 발생)
   - 기존 재고 로직 활용, 테스트 스크립트만 변경
-- [ ] k6 테스트 스크립트 작성
-- [ ] 성능 측정 및 결과 분석
-- [ ] 가설 검증: "수요 분산 환경에서는 Optimistic이 2배 이상 빠름"
+- [x] k6 테스트 스크립트 작성
+- [x] 성능 측정 및 결과 분석
+- [x] 가설 검증: "수요 분산 환경에서는 Optimistic이 2배 이상 빠름"
 
 **Acceptance Criteria:**
 - 충돌 희귀 환경(1-5%)에서 Optimistic이 Pessimistic 대비 TPS 우위 증명
@@ -115,17 +115,24 @@
 
 **목표:** Redis Distributed Lock과 Lua Script의 Best Fit 시나리오를 구현하고 검증한다.
 
-#### US-7.5: Redis Distributed Lock - "Resource Protection" 구현
-- [ ] DB 포화 상태 시뮬레이션
-  - DB CPU 부하 100% 상황 재현
-  - Redis를 통한 유입 제어(Throttling) 구현
-- [ ] k6 테스트 스크립트 작성
-- [ ] 성능 측정 및 결과 분석
-- [ ] 가설 검증: "DB 포화 시 Redis Lock이 시스템 안정성 보장"
+#### US-7.5: Scenario 3 - "The Alliance" 구현 (Redis Lock + Optimistic)
+- [ ] 연합군 시나리오 설계 및 구현
+  - 레디스 분산 락(전방 방어선) + 낙관적 락(후방 수비대) 조합
+  - 비관적 락(고독한 전사)과의 정면 승부
+- [ ] 고부하 상황 시뮬레이션 (500 VUs vs DB Pool 10)
+- [ ] k6 테스트 스크립트 작성 및 측정
+- [ ] 가설 검증: "연합군 체계가 고부하 상황에서 DB 커넥션을 더 효율적으로 보호하며 안정적 처리량을 유지함"
 
 **Acceptance Criteria:**
-- Busy DB 상황에서 Redis Lock의 보호 효과 증명
-- DB 다운 방지 및 안정적 처리량 유지 확인
+- 연합군 체계가 비관적 락 대비 DB 커넥션 점유 시간을 획기적으로 줄임을 증명
+- 500 VUs 상황에서 시스템 전체의 생존력(Availability) 확인
+
+**⚠️ 실무 도입 원칙 (반드시 리포트에 반영):**
+> 연합군(Redis + Optimistic)이 비관적 락보다 성능이 우수하더라도 **절대로 먼저 도입하지 마라.**
+> 비관적 락은 RDBMS 벤더들이 수십 년간 충분한 노하우를 쌓아온 검증된 기능이다.
+> 단순히 RDBMS 부하를 낮추고 싶다는 개인적 스펙업 욕심이나,
+> RDBMS 스펙을 낮춰 비용을 절감하겠다는 이유로 섣불리 도입해서는 안 된다.
+> Redis 역시 비용이 발생하며, 특히 숨겨진 **"관리"라는 비용**이 추가로 나감을 반드시 인지해야 한다.
 
 #### US-7.6: Lua Script - "Atomic Counter" 구현
 - [ ] 단순 고속 처리 시나리오 구현
@@ -254,9 +261,9 @@
    - 충돌이 드문 읽기 위주 환경에서는 낙관적 락이 가장 효율적
    - 락 오버헤드 제거로 높은 TPS 달성
 
-3. **Redis Distributed Lock (Resource Protection):**
-   - DB 포화 상태에서는 Redis 락이 시스템 안정성 보장
-   - Throttling을 통한 DB 보호 효과 입증
+3. **The Alliance (Redis Lock + Optimistic):**
+   - 레디스가 전방에서 유입량을 조절(Queueing)함으로써 DB 커넥션 고갈을 방지
+   - 낙관적 락은 마지막 정합성을 수호하며, 연합군 체계가 대규모 트래픽에서 최고의 생존력을 보임
 
 4. **Lua Script (Atomic Counter):**
    - 단순 로직에서는 Lua 스크립트가 압도적 성능

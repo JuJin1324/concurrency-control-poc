@@ -164,12 +164,32 @@ reset-infra:
 	@echo "⏳ Waiting for DB to be ready..."
 	@sleep 10
 
-# Low Contention Test (Scenario 2)
-# Usage: make test-low-contention METHOD=optimistic PRODUCTS=50 VUS=300
-test-low-contention: reset-infra warmup
-	@make reset-products PRODUCTS=$(or $(PRODUCTS),100) QUANTITY=20000
-	@echo "🚀 Starting Low Contention Test (METHOD=$(or $(METHOD),optimistic), PRODUCTS=$(or $(PRODUCTS),100), VUS=$(or $(VUS),100))"
-	$(K6_CMD) -e METHOD=$(or $(METHOD),optimistic) -e PRODUCT_COUNT=$(or $(PRODUCTS),100) -e VUS=$(or $(VUS),100) /scripts/2-low-contention.js
+# Scenario 2: Low Contention 리셋
+# Usage: make reset-low-contention PRODUCTS=100 QUANTITY=100
+reset-low-contention:
+	@make reset-products PRODUCTS=$(or $(PRODUCTS),100) QUANTITY=$(or $(QUANTITY),100)
+	@echo "🔄 Reset Scenario 2: $(or $(PRODUCTS),100) products, each stock=$(or $(QUANTITY),100)"
+
+# Scenario 2: Pessimistic Test
+test-low-contention-pessimistic: warmup reset-low-contention
+	@echo "🚀 Starting Low Contention Scenario (Pessimistic)"
+	$(K6_CMD) -e METHOD=pessimistic -e PRODUCT_COUNT=100 /scripts/2-low-contention.js
+	@make show-db
+
+# Scenario 2: Optimistic No-Retry Test
+test-low-contention-optimistic-no-retry: warmup reset-low-contention
+	@echo "🚀 Starting Low Contention Scenario (Optimistic No-Retry)"
+	$(K6_CMD) -e METHOD=optimistic-no-retry -e PRODUCT_COUNT=100 /scripts/2-low-contention.js
+	@make show-db
+
+# Scenario 2: Optimistic Retry Test
+test-low-contention-optimistic-retry: warmup reset-low-contention
+	@echo "🚀 Starting Low Contention Scenario (Optimistic Retry)"
+	$(K6_CMD) -e METHOD=optimistic-retry -e PRODUCT_COUNT=100 /scripts/2-low-contention.js
+	@make show-db
+
+# Legacy Low Contention Test (Scenario 2)
+test-low-contention: test-low-contention-pessimistic
 
 # Legacy Low Contention Test (Sprint 1-6)
 test-low-contention-v1: warmup

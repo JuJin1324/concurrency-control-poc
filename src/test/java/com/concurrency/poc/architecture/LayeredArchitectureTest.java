@@ -37,5 +37,13 @@ public class LayeredArchitectureTest {
                     describe("domain entities (not exceptions)", (JavaClass clazz) ->
                             clazz.getPackageName().contains("domain")
                                     && !clazz.getSimpleName().endsWith("Exception"))
+            )
+            // GlobalExceptionHandler에서 Domain 예외 클래스 접근 허용
+            .ignoreDependency(
+                    describe("exception handler classes", (JavaClass clazz) ->
+                            clazz.getPackageName().contains("exception")),
+                    describe("domain exception classes", (JavaClass clazz) ->
+                            clazz.getPackageName().contains("domain")
+                                    && clazz.getSimpleName().endsWith("Exception"))
             );
 }

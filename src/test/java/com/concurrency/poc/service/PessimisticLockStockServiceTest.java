@@ -1,6 +1,7 @@
 package com.concurrency.poc.service;
 
 import com.concurrency.poc.core.domain.Stock;
+import com.concurrency.poc.scenario.standard.service.PessimisticLockStockService;
 import com.concurrency.poc.fixtures.ConcurrencyTestSupport;
 import com.concurrency.poc.fixtures.ConcurrencyTestSupport.ConcurrencyTestConfig;
 import com.concurrency.poc.fixtures.ConcurrencyTestSupport.ConcurrencyTestResult;

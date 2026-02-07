@@ -31,7 +31,7 @@ export default function () {
   const payload = JSON.stringify({ stockId: randomStockId, amount: 1 });
   const params = { headers: { 'Content-Type': 'application/json' } };
 
-  const res = http.post(`${BASE_URL}/api/bestfit/low-contention/decrease?method=${METHOD}`, payload, params);
+  const res = http.post(`${BASE_URL}/api/low-contention/decrease?method=${METHOD}`, payload, params);
 
   check(res, {
     'is success (200)': (r) => r.status === 200,
