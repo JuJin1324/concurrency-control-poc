@@ -22,16 +22,19 @@ public class ComplexTransactionController {
             @RequestParam(defaultValue = "pessimistic") String method,
             @Valid @RequestBody StockDecreaseRequest request
     ) {
-        String beanName = method.equalsIgnoreCase("optimistic")
-                ? "optimisticComplexTransactionService"
-                : "pessimisticComplexTransactionService";
+        String beanName = switch (method.toLowerCase()) {
+            case "optimistic-no-retry" -> "optimisticNoRetryComplexTransactionService";
+            case "optimistic-retry" -> "optimisticRetryComplexTransactionService";
+            case "pessimistic" -> "pessimisticComplexTransactionService";
+            default -> throw new IllegalArgumentException("지원하지 않는 방식입니다: " + method);
+        };
 
         ComplexTransactionService service = serviceMap.get(beanName);
         if (service == null) {
-            throw new IllegalArgumentException("지원하지 않는 방식입니다: " + method);
+            throw new IllegalStateException("해당 서비스 빈을 찾을 수 없습니다: " + beanName);
         }
 
-        service.process(request.stockId(), request.amount());
+        service.process(1L, request.stockId(), request.amount());
         return ResponseEntity.ok(StockDecreaseResponse.success(0));
     }
 }

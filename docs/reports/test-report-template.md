@@ -23,16 +23,24 @@
 
 ### 1.2 Tuning Config
 *   **스레드 모델:** `spring.threads.virtual.enabled: true`
+*   **DB Connection Pool:** HikariCP Max 10 (**의도적 제한:** 적은 자원으로 고경합 상황을 유도하여 각 기술의 자원 점유 효율성 검증)
 *   **로그 레벨:** `INFO` (성능 저하 방지)
 *   **OS 튜닝:** `ulimits -n 65535`
 
-### 1.3 Scenario Spec
-| 항목 | 설정값 | 비고 |
+### 1.3 상세 테스트 시나리오 (Detailed Scenario)
+테스트가 검증하고자 하는 상황을 구체적으로 묘사합니다.
+1.  **경합 모델:** (예: Hotspot - 동일 상품 집중 경합)
+2.  **워크플로우:** (예: 트랜잭션 진입 -> 100ms 대기 -> 업데이트)
+3.  **부하 특성:** (예: Think-time 없이 연속 요청)
+
+### 1.4 Scenario Spec 요약
+| 항목 | 설정값 | 상세 설명 |
 |:---|:---|:---|
-| **Stock** | [수량] | 예: 100개 (경합), 10,000개 (용량) |
-| **VUs** | [사용자 수] | 예: 100 (High), 5,000 (Hell) |
-| **Executor** | [실행 방식] | 예: `shared-iterations`, `constant-vus`, `ramping-arrival-rate` |
-| **Duration** | [시간] | 예: 30s |
+| **Target Data** | [대상] | 예: Single Row / Distributed |
+| **Internal Delay** | [지연시간] | 예: 100ms (Thread.sleep) |
+| **Virtual Users** | [사용자 수] | 예: 50 VUs |
+| **Total Iterations** | [반복 횟수] | 예: 1,000회 |
+| **Initial State** | [초기값] | 예: Stock 1,000 / Points 100k |
 
 ---
 

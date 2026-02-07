@@ -13,16 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * [Best Fit Scenario 1] Complex Transaction - Pessimistic Lock
- * 
- * 비관적 락이 주인공이 되는 시나리오입니다.
- * 재고 차감 + 포인트 차감 + 주문 이력 생성이 하나의 트랜잭션으로 묶여 있으며,
- * 비관적 락을 통해 데이터 정합성을 가장 안정적으로 보장합니다.
+ * [Scenario 1-A] Optimistic Lock - No Retry
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PessimisticComplexTransactionService implements ComplexTransactionService {
+public class OptimisticNoRetryComplexTransactionService implements ComplexTransactionService {
 
     private final StockRepository stockRepository;
     private final PointRepository pointRepository;
@@ -31,25 +27,21 @@ public class PessimisticComplexTransactionService implements ComplexTransactionS
     @Override
     @Transactional
     public void process(Long userId, Long stockId, int amount) {
-        // 1. 재고 비관적 락 조회
-        Stock stock = stockRepository.findByIdWithPessimisticLock(stockId)
+        Stock stock = stockRepository.findById(stockId)
                 .orElseThrow(() -> new StockNotFoundException(stockId));
 
-        // 2. 포인트 비관적 락 조회
-        Point point = pointRepository.findByUserIdWithPessimisticLock(userId)
+        Point point = pointRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("사용자 포인트를 찾을 수 없습니다. userId: " + userId));
 
-        // 3. 복잡한 비즈니스 로직 시뮬레이션 (긴 트랜잭션 유도)
         simulateWait(100);
 
-        // 4. 데이터 업데이트
         stock.decrease(amount);
-        point.use((long) amount * 100); // 1개당 100포인트 가정
+        point.use((long) amount * 100);
         
-        // 5. 이력 생성
         orderHistoryRepository.save(new OrderHistory(userId, stockId, amount));
         
-        // 트랜잭션 종료 시 락 일괄 해제
+        stockRepository.saveAndFlush(stock);
+        pointRepository.saveAndFlush(point);
     }
 
     private void simulateWait(long millis) {

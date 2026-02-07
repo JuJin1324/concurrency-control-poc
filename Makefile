@@ -71,9 +71,14 @@ reset-10k:
 	@docker compose exec redis redis-cli set stock:1 10000 > /dev/null
 	@echo "🔄 Reset: Stock = 10,000"
 
-# MySQL 재고 데이터 조회
+# 모든 관련 테이블 상태 통합 조회 (정합성 검증용)
 show-db:
-	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "SELECT * FROM stock;" 2>/dev/null
+	@echo "\n📊 [Database Consistency Check]"
+	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e " \
+		SELECT 'STOCK' as table_name, id, quantity, version FROM stock WHERE id = 1; \
+		SELECT 'POINT' as table_name, user_id, balance, version FROM point WHERE user_id = 1; \
+		SELECT 'ORDER' as table_name, count(*) as 'total_history_count' FROM order_history; \
+	" 2>/dev/null
 
 # Redis 재고 데이터 조회 (stock:1)
 show-redis:
@@ -122,11 +127,33 @@ test-stress: warmup
 	@echo "🚀 Starting Stress Test (METHOD=$(or $(METHOD),pessimistic), TARGET_RPS=$(or $(TARGET_RPS),2000))"
 	$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) -e TARGET_RPS=$(or $(TARGET_RPS),2000) /scripts/stress.js
 
-# Best Fit Scenario 1: Complex Transaction (Pessimistic)
-test-complex-transaction: warmup
-	@make reset-products PRODUCTS=5 QUANTITY=10000
+# --- [Best Fit Scenario Targets] ---
+
+# Scenario 1: Complex Transaction 리셋
+reset-complex:
+	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; TRUNCATE TABLE point; TRUNCATE TABLE order_history; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 1000); INSERT INTO point (user_id, balance) VALUES (1, 100000); " 2>/dev/null
+	@echo "🔄 Reset Scenario 1: Stock=1,000, Point=100k, OrderHistory=0"
+
+# Scenario 1: Pessimistic Test
+test-complex-pessimistic: warmup reset-complex
 	@echo "🚀 Starting Complex Transaction Scenario (Pessimistic)"
-	$(K6_CMD) /scripts/1-complex-transaction.js
+	$(K6_CMD) -e METHOD=pessimistic /scripts/1-complex-transaction.js
+	@make show-db
+
+# Scenario 1: Optimistic No-Retry Test
+test-complex-optimistic-no-retry: warmup reset-complex
+	@echo "🚀 Starting Complex Transaction Scenario (Optimistic No-Retry)"
+	$(K6_CMD) -e METHOD=optimistic-no-retry /scripts/1-complex-transaction.js
+	@make show-db
+
+# Scenario 1: Optimistic Retry Test
+test-complex-optimistic-retry: warmup reset-complex
+	@echo "🚀 Starting Complex Transaction Scenario (Optimistic Retry)"
+	$(K6_CMD) -e METHOD=optimistic-retry /scripts/1-complex-transaction.js
+	@make show-db
+
+# Legacy Scenario 1 Target (Update to use pessimistic)
+test-complex-transaction: test-complex-pessimistic
 
 # 인프라 완전 재시작 (격리된 테스트 환경 보장)
 reset-infra:

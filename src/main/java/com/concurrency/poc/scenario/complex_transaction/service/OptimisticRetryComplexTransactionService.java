@@ -1,7 +1,11 @@
 package com.concurrency.poc.scenario.complex_transaction.service;
 
+import com.concurrency.poc.core.domain.OrderHistory;
+import com.concurrency.poc.core.domain.Point;
 import com.concurrency.poc.core.domain.Stock;
 import com.concurrency.poc.core.domain.StockNotFoundException;
+import com.concurrency.poc.core.repository.OrderHistoryRepository;
+import com.concurrency.poc.core.repository.PointRepository;
 import com.concurrency.poc.core.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,44 +15,47 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * [Best Fit Scenario 1 - Comparison Target]
- * 
- * 비관적 락의 우위를 증명하기 위한 비교 대상(낙관적 락)입니다.
- * 복잡한 트랜잭션 상황에서 낙관적 락은 빈번한 재시도로 인해
- * 오히려 성능이 저하되거나 안정성이 떨어질 수 있음을 보여줍니다.
+ * [Scenario 1-B] Optimistic Lock - With 3 Retries
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OptimisticComplexTransactionService implements ComplexTransactionService {
+public class OptimisticRetryComplexTransactionService implements ComplexTransactionService {
 
     private final StockRepository stockRepository;
+    private final PointRepository pointRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
 
     @Override
     @Retryable(
             includes = ObjectOptimisticLockingFailureException.class,
-            maxRetries = 10,
-            delay = 50,
-            multiplier = 2,
-            maxDelay = 1000
+            maxRetries = 3,
+            delay = 100
     )
     @Transactional
-    public void process(Long stockId, int amount) {
+    public void process(Long userId, Long stockId, int amount) {
         Stock stock = stockRepository.findById(stockId)
                 .orElseThrow(() -> new StockNotFoundException(stockId));
 
-        simulateComplexLogic();
+        Point point = pointRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 포인트를 찾을 수 없습니다. userId: " + userId));
+
+        simulateWait(100);
 
         stock.decrease(amount);
+        point.use((long) amount * 100);
+        
+        orderHistoryRepository.save(new OrderHistory(userId, stockId, amount));
+        
         stockRepository.saveAndFlush(stock);
+        pointRepository.saveAndFlush(point);
     }
 
-    private void simulateComplexLogic() {
+    private void simulateWait(long millis) {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
         }
     }
 }
