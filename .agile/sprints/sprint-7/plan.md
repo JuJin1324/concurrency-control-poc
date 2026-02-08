@@ -38,8 +38,8 @@
 |----------|-------------|-----------|-----------|-------------|
 | **1. Complex Transaction** | 🛡️ 안정성 | Pessimistic vs Optimistic | Rollback Count | Pessimistic |
 | **2. Low Contention Update** | ⚡ 성능 | Optimistic vs Pessimistic | TPS, Retry Count | Optimistic |
-| **3. The Alliance** | 🏥 확장성 | 연합군(Redis+Optimistic) vs 전사(Pessimistic) | Connection Usage | Redis+Optimistic |
-| **4. Atomic Counter** | 🚀 극한 성능 | 기존 Sprint 5 데이터 활용 | TPS | Lua Script |
+| **3. Resource Protection** | 🏥 확장성 | 계층적 제어(Redis+Optimistic) vs DB 단독(Pessimistic) | Connection Usage | Redis+Optimistic |
+| **4. Redis as Primary** | 🏗️ 아키텍처 트레이드오프 | Lua Script(Redis 단독) vs DB Lock 방식들 | TPS, 영속성, 장애 복구 | Lua Script (성능) / DB Lock (안정성) |
 
 **효율성:**
 - ⏱️ 전체 비교 시 10+ 일 → **효율적 접근 4-6일**
@@ -115,13 +115,13 @@
 
 **목표:** Redis Distributed Lock과 Lua Script의 Best Fit 시나리오를 구현하고 검증한다.
 
-#### US-7.5: Scenario 3 - "The Alliance" 구현 (Redis Lock + Optimistic)
-- [ ] 연합군 시나리오 설계 및 구현
-  - 레디스 분산 락(전방 방어선) + 낙관적 락(후방 수비대) 조합
-  - 비관적 락(고독한 전사)과의 정면 승부
-- [ ] 고부하 상황 시뮬레이션 (500 VUs vs DB Pool 10)
-- [ ] k6 테스트 스크립트 작성 및 측정
-- [ ] 가설 검증: "연합군 체계가 고부하 상황에서 DB 커넥션을 더 효율적으로 보호하며 안정적 처리량을 유지함"
+#### US-7.5: Scenario 3 - "Resource Protection" 구현 (Redis Lock + Optimistic)
+- [x] 계층적 자원 보호 시나리오 설계 및 구현
+  - Redis 분산 락(전방 제어) + 낙관적 락(후방 검증) 조합
+  - 비관적 락(DB 단독 제어)과의 비교 검증
+- [x] 고부하 상황 시뮬레이션 (500 VUs vs DB Pool 10)
+- [x] k6 테스트 스크립트 작성 및 측정
+- [x] 가설 검증: "연합군 체계가 고부하 상황에서 DB 커넥션을 더 효율적으로 보호하며 안정적 처리량을 유지함"
 
 **Acceptance Criteria:**
 - 연합군 체계가 비관적 락 대비 DB 커넥션 점유 시간을 획기적으로 줄임을 증명
@@ -134,17 +134,20 @@
 > RDBMS 스펙을 낮춰 비용을 절감하겠다는 이유로 섣불리 도입해서는 안 된다.
 > Redis 역시 비용이 발생하며, 특히 숨겨진 **"관리"라는 비용**이 추가로 나감을 반드시 인지해야 한다.
 
-#### US-7.6: Lua Script - "Atomic Counter" 구현
-- [ ] 단순 고속 처리 시나리오 구현
-  - 로직 단순화 (단순 카운터 연산)
-  - 대규모 트래픽 (100만 건) 처리
+#### US-7.6: Lua Script - "Redis as Primary Storage" 구현
+- [ ] Redis 단독 재고 관리 시나리오 구현
+  - DB 없이 Redis만으로 재고 차감 처리 (동일 비즈니스 로직)
+  - Sprint 5 Lua Script 구현체 활용 및 확장
 - [ ] k6 테스트 스크립트 작성
-- [ ] 성능 측정 및 결과 분석
-- [ ] 가설 검증: "단순 로직에서는 Lua Script가 압도적 성능"
+- [ ] 성능 측정 및 트레이드오프 분석
+  - 성능: Sprint 5 데이터 재활용 + 추가 측정
+  - 영속성: Redis 장애 시 데이터 유실 가능성 분석
+  - 운영 복잡도: DB 동기화 필요 시 그 오버헤드
+- [ ] 가설 검증: "극한 성능을 얻지만, 영속성과 운영 복잡도라는 대가를 치른다"
 
 **Acceptance Criteria:**
-- 단순 연산에서 Lua Script의 압도적 TPS 우위 증명
-- 타 방식 대비 성능 격차 정량 측정
+- 동일 비즈니스(재고 차감)에서 Redis 단독 vs DB Lock 방식의 트레이드오프 정량화
+- 성능 우위뿐 아니라 **포기하는 것(영속성, 장애 복구)**을 명확히 문서화
 
 **✅ Iteration 3 완료 조건:**
 - Redis Lock, Lua Script 각각의 Best Fit 증명 완료
@@ -162,7 +165,7 @@
   - `docs/reports/bestfit-complex-transaction.md` (Pessimistic)
   - `docs/reports/bestfit-read-heavy.md` (Optimistic)
   - `docs/reports/bestfit-resource-protection.md` (Redis Lock)
-  - `docs/reports/bestfit-atomic-counter.md` (Lua Script)
+  - `docs/reports/bestfit-redis-as-primary.md` (Lua Script)
 - [ ] 통합 리포트 작성
   - **템플릿 기준:** `docs/reports/performance-v2.md` 구조 참조
   - `docs/reports/best-fit-verification.md` 작성
@@ -261,13 +264,14 @@
    - 충돌이 드문 읽기 위주 환경에서는 낙관적 락이 가장 효율적
    - 락 오버헤드 제거로 높은 TPS 달성
 
-3. **The Alliance (Redis Lock + Optimistic):**
-   - 레디스가 전방에서 유입량을 조절(Queueing)함으로써 DB 커넥션 고갈을 방지
-   - 낙관적 락은 마지막 정합성을 수호하며, 연합군 체계가 대규모 트래픽에서 최고의 생존력을 보임
+3. **Resource Protection (Redis Lock + Optimistic):**
+   - Redis가 전방에서 유입량을 조절(Queuing)함으로써 DB 커넥션 고갈을 방지
+   - 낙관적 락은 최종 정합성을 보장하며, 계층적 제어 체계가 대규모 트래픽에서 최고의 생존력을 보임
 
-4. **Lua Script (Atomic Counter):**
-   - 단순 로직에서는 Lua 스크립트가 압도적 성능
-   - I/O 최소화로 최고 TPS 달성
+4. **Lua Script (Redis as Primary Storage):**
+   - DB 없이 Redis만으로 재고를 관리하면 극한 성능을 얻는다
+   - 그러나 영속성 포기, 장애 시 데이터 유실, DB 동기화 비용이라는 대가를 치른다
+   - "빠르다"가 아니라 "무엇을 포기하고 빠른가"가 핵심 인사이트
 
 ### 기대 효과
 

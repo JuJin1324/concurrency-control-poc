@@ -191,6 +191,25 @@ test-low-contention-optimistic-retry: warmup reset-low-contention
 # Legacy Low Contention Test (Scenario 2)
 test-low-contention: test-low-contention-pessimistic
 
+# --- [Scenario 3: Resource Protection] ---
+
+# Scenario 3: Resource Protection 리셋
+reset-resource-protection:
+	@make reset-products PRODUCTS=5 QUANTITY=100000
+	@echo "🔄 Reset Scenario 3: 5 products, each stock=100,000"
+
+# Scenario 3: Pessimistic Test
+test-resource-protection-pessimistic: reset-infra warmup reset-resource-protection
+	@echo "🚀 Starting Resource Protection Scenario (Pessimistic)"
+	$(K6_CMD) -e METHOD=pessimistic /scripts/3-resource-protection.js
+	@make show-db
+
+# Scenario 3: Redis-Optimistic Test
+test-resource-protection-redis-optimistic: reset-infra warmup reset-resource-protection
+	@echo "🚀 Starting Resource Protection Scenario (Redis-Optimistic)"
+	$(K6_CMD) -e METHOD=redis-optimistic /scripts/3-resource-protection.js
+	@make show-db
+
 # Legacy Low Contention Test (Sprint 1-6)
 test-low-contention-v1: warmup
 	@make reset-100
