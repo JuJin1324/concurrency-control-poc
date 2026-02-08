@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 public class RedisOptimisticResourceProtectionService implements ResourceProtectionService {
 
     private static final String LOCK_PREFIX = "lock:resource-protection:stock:";
-    private static final long WAIT_TIME = 10L;
-    private static final long LEASE_TIME = 3L;
+    private static final long WAIT_TIME = 3L;
+    private static final long LEASE_TIME = 5L;
 
     private final RedissonClient redissonClient;
     private final StockRepository stockRepository;

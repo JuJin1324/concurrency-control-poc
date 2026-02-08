@@ -24,6 +24,7 @@ public class ResourceProtectionController {
     ) {
         String beanName = switch (method.toLowerCase()) {
             case "pessimistic" -> "pessimisticResourceProtectionService";
+            case "optimistic" -> "optimisticResourceProtectionService";
             case "redis-optimistic" -> "redisOptimisticResourceProtectionService";
             default -> throw new IllegalArgumentException("지원하지 않는 방식입니다: " + method);
         };

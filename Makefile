@@ -210,6 +210,12 @@ test-resource-protection-redis-optimistic: reset-infra warmup reset-resource-pro
 	$(K6_CMD) -e METHOD=redis-optimistic /scripts/3-resource-protection.js
 	@make show-db
 
+# Scenario 3: Optimistic (No-Retry) Test
+test-resource-protection-optimistic: reset-infra warmup reset-resource-protection
+	@echo "🚀 Starting Resource Protection Scenario (Optimistic No-Retry)"
+	$(K6_CMD) -e METHOD=optimistic /scripts/3-resource-protection.js
+	@make show-db
+
 # Legacy Low Contention Test (Sprint 1-6)
 test-low-contention-v1: warmup
 	@make reset-100

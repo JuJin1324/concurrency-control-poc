@@ -134,19 +134,42 @@
 > RDBMS 스펙을 낮춰 비용을 절감하겠다는 이유로 섣불리 도입해서는 안 된다.
 > Redis 역시 비용이 발생하며, 특히 숨겨진 **"관리"라는 비용**이 추가로 나감을 반드시 인지해야 한다.
 
+#### US-7.5.1: Resource Protection 보정 및 비교 확장
+- [x] waitTime 버그 수정: 코드 10s → 3s (리포트와 일치시킴)
+  - `RedisOptimisticResourceProtectionService.java`의 WAIT_TIME 10L → 3L
+  - 수정 후 Redis+Optimistic 재측정 → 진짜 "빠른 실패" 데이터 확보
+- [x] Optimistic Lock 단독 (재시도 없음) 구현체 추가 및 테스트
+  - `ResourceProtectionService` 전략 패턴의 새 구현체로 추가
+  - 클래스: `OptimisticResourceProtectionService` (기존 코드 수정 없이 신규 추가)
+  - 컨트롤러 method 파라미터에 `"optimistic"` 매핑 추가
+  - 동일 전장(500 VUs, DB Pool 10, 5 Rows)에서 테스트
+  - Redis 보호 없이 DB에 직접 충돌 → 실패율 측정
+- [x] 3자 실패율 비교 분석
+  - Pessimistic: 성공률 100%, 그러나 자원 고갈 위험
+  - Optimistic 단독: 재시도 없으므로 높은 실패율 예상
+  - Redis+Optimistic: Redis가 실패율을 얼마나 줄여주는가?
+- [x] 리포트 업데이트: 보정된 데이터 반영 및 Optimistic 단독 비교 추가
+
+**핵심 질문:** "Redis가 없는 낙관적 락 vs Redis가 있는 낙관적 락 — Redis의 보호 효과는 정량적으로 얼마인가?"
+
 #### US-7.6: Lua Script - "Redis as Primary Storage" 구현
-- [ ] Redis 단독 재고 관리 시나리오 구현
+- [ ] US-7.5 시나리오 확장: 동일 전장(500 VUs vs DB Pool 10)에 Lua Script 투입
   - DB 없이 Redis만으로 재고 차감 처리 (동일 비즈니스 로직)
-  - Sprint 5 Lua Script 구현체 활용 및 확장
-- [ ] k6 테스트 스크립트 작성
-- [ ] 성능 측정 및 트레이드오프 분석
-  - 성능: Sprint 5 데이터 재활용 + 추가 측정
+  - Sprint 5 Lua Script 구현체 활용
+  - US-7.5의 k6 시나리오를 확장하여 Lua Script 테스트 추가
+- [ ] 3자 비교 성능 측정
+  - Pessimistic (DB 단독) — US-7.5 데이터 재활용
+  - Redis+Optimistic (계층적 보호) — US-7.5 데이터 재활용
+  - Lua Script (Redis 단독) — 신규 측정
+- [ ] 트레이드오프 분석
+  - DB 의존도 스펙트럼: DB 단독 → DB+Redis → Redis 단독
   - 영속성: Redis 장애 시 데이터 유실 가능성 분석
-  - 운영 복잡도: DB 동기화 필요 시 그 오버헤드
-- [ ] 가설 검증: "극한 성능을 얻지만, 영속성과 운영 복잡도라는 대가를 치른다"
+  - 운영 복잡도: Redis 단독 운영 시 DB 동기화를 위한 EDA(이벤트 기반 아키텍처) 등 추가 시스템 필요성 정리
+  - Redis 단독의 숨겨진 비용: 성능은 얻지만 동기화 인프라(Kafka, CDC 등)라는 새로운 복잡도가 추가됨
+- [ ] 가설 검증: "DB 의존도를 완전히 제거하면 극한 성능을 얻지만, 영속성이라는 대가를 치른다"
 
 **Acceptance Criteria:**
-- 동일 비즈니스(재고 차감)에서 Redis 단독 vs DB Lock 방식의 트레이드오프 정량화
+- 동일 전장(500 VUs, DB Pool 10)에서 3자 비교를 통한 DB 의존도별 트레이드오프 정량화
 - 성능 우위뿐 아니라 **포기하는 것(영속성, 장애 복구)**을 명확히 문서화
 
 **✅ Iteration 3 완료 조건:**
@@ -187,6 +210,11 @@
 - [ ] `docs/reports/performance-v2.md` 업데이트
   - Best Fit 시나리오 섹션 추가
   - 또는 best-fit-verification.md 링크 추가
+  - **[NEW] "인프라 자원과 Redis 도입의 상관관계" 인사이트 추가**
+    - Sprint 5~6(DB Pool 50): 자원 여유 → 비관적 락이 Redis Lock보다 빠름 (재시도 포함 낙관락보다도)
+    - Sprint 7(DB Pool 10): 자원 부족 → Redis의 진가 발휘 (Lua 1등, Redis Lock 2등, 낙관락 3등, 비관락 4등)
+    - 핵심 교훈: **자원이 널널한 환경에서 Redis 도입은 부질없다.** 비관적 락만으로 충분한 상황에서 Redis를 끼워넣으면 네트워크 홉만 추가되어 오히려 성능이 떨어짐
+    - Redis 도입의 정당한 시점: 트래픽 대비 인프라 자원이 부족해지기 시작할 때
 - [ ] `docs/reports/practical-guide.md` 업데이트
   - **템플릿 기준:** 기존 구조 유지
   - Section 1 (의사결정 매트릭스): Best Fit 시나리오 반영
