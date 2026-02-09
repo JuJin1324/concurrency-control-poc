@@ -38,7 +38,7 @@
 | **Pessimistic Lock** | MySQL `FOR UPDATE` | 데이터 정합성 최우선 | 동시성 저하 (직렬 처리) |
 | **Optimistic Lock** | JPA `@Version` | 락 없이 버전 관리 | 충돌 시 재시도 비용 발생 |
 | **Distributed Lock** | Redisson (Pub/Sub) | 분산 환경 락 제어 | 네트워크 RTT 오버헤드 |
-| **Lua Script** | Redis `EVAL` | **서버 사이드 원자성** | 스크립트 관리 필요 |
+| **Lua Script** | Redis `EVAL` | **서버 사이드 원자성** | 단순한 비즈니스 로직에만 적용 가능 |
 
 ### System Architecture
 ```mermaid
@@ -81,18 +81,56 @@ flowchart LR
 
 ## 📊 핵심 인사이트 (Key Insights)
 
-### "낙관적 락이 비관적 락보다 빠르다"는 통념의 검증
-- 저경합 환경에서조차 TPS 차이 **2.8%에 불과**, 재시도 포함 시 비관적 락에 역전.
-- 낙관적 락은 성능이 아닌 **경합 감지 보험(`@Version`)과 커넥션 효율성**에 존재 이유가 있음.
+### 1. 통념 검증: "낙관적 락이 비관적 락보다 빠르다"는 조건부 명제
 
-### 비즈니스 로직 지연에 따른 순위 반전
-- 100ms 지연 시: Redis+Optimistic 1위 (154 TPS) vs Pessimistic 최하위 (36 TPS)
-- 0ms 지연 시: Pessimistic 2위 (978 TPS) vs Redis Lock 최하위 (602 TPS)
-- **기술 선택은 비즈니스 로직의 복잡도에 의해 결정**되어야 함.
+- 저경합(100상품 분산) 환경에서 낙관적 락(89.36 TPS)이 비관적 락(86.95 TPS)보다 겨우 **2.8% 높았을 뿐**이며, 재시도 3회를 포함하면 오히려 **비관적 락에 역전**(83.50 vs 86.95 TPS).
+- 충돌률이 5%에 불과한 환경에서도 재시도를 도입하는 순간 [로직 재수행 + 커넥션 재획득 + 네트워크 RTT] 비용이 누적되어 낙관적 락의 '락 없음' 이점이 완전히 상쇄됨.
+- **결론:** "낙관적 락이 빠르다"는 명제는 **재시도가 거의 작동하지 않을 때만 미세하게 성립**하는 조건부 명제. 실무에서 실패를 허용하지 않는다면 비관적 락이 성능까지 앞섬.
 
-### Redis 도입의 정당한 시점
-- 자원이 널널한 환경(DB Pool 50)에서 Redis 도입은 네트워크 홉만 추가하여 오히려 성능 저하.
+### 2. 각 방식의 본질적 가치: 성능이 아닌 역할로 이해하라
+
+**낙관적 락 — 경합 감지 모니터링 도구 (0순위 기본값)**
+- `@Version`은 "빠르기 때문에" 쓰는 것이 아니라, **"어디서 경합이 발생하는지 알려주기 때문에"** 쓰는 것.
+- `ObjectOptimisticLockingFailureException` 발생 빈도를 모니터링하면 비관적 락을 적용할 엔티티를 자연스럽게 식별할 수 있음. 5%의 충돌률이 바로 **"이 엔티티에 비관적 락이 필요하다"**는 신호.
+- 같은 트래픽 대비 DB 커넥션을 아껴 쓰는 **커넥션 효율성**이 숨겨진 핵심 가치. 100 VUs에서는 미미하지만, 500+ VUs에서 결정적 차이를 만듦.
+
+**비관적 락 — 자원 낭비 제로의 안정적 표준 (1순위 타겟 솔루션)**
+- 성공률 100%의 진짜 의미: 모든 DB 커넥션이 **비즈니스 가치를 생산**함. 낙관적 락의 재시도는 이전 커넥션 사용이 "헛수고"가 되는 자원 낭비.
+- 복합 트랜잭션(재고 차감 + 포인트 사용 + 결제 이력)에서 **실질 처리량 1위**, 저경합 환경에서도 성능/안정성/구현 단순성 **종합 1위**.
+- 단, **Easy to Use, Hard to Master** — JPA `@Lock`은 간편하지만, MySQL Gap Lock, PostgreSQL Advisory Lock 등 RDBMS별 락 특성을 반드시 이해해야 함.
+
+**Lua Script — 도입의 정당성은 TPS가 아니라 DB 커넥션 보호**
+- Lua Script를 위해 도메인 로직을 간소화하면, 동일하게 간소화된 로직을 비관적 락으로 실행해도 **26.7배 TPS 향상**(36→978 TPS).
+- 즉, 단순히 TPS를 높이려면 **로직 간소화만으로 충분**. Lua Script의 진짜 가치는 DB 커넥션을 사용하지 않고 Redis에서 원자적으로 처리하여 **DB 자원을 근본적으로 보호**하는 것.
+
+### 3. 비즈니스 로직 지연에 따른 순위 반전
+
+- 100ms 지연 시: Redis+Optimistic **1위** (154 TPS) vs Pessimistic **최하위** (36 TPS)
+- 0ms 지연 시: Pessimistic **2위** (978 TPS) vs Redis Lock **최하위** (602 TPS)
+- **결론:** 기술 선택은 벤치마크가 아니라 **비즈니스 로직의 복잡도**에 의해 결정되어야 함. 동일 기술이라도 비즈니스 맥락에 따라 1위도 꼴찌도 될 수 있음.
+
+### 4. 인프라 자원이 기술 선택을 결정한다
+
+**커넥션 풀 설정이 성능 천장을 결정**
+- DB Pool 50 환경: 비관적 락만으로 충분, Redis 도입은 네트워크 홉만 추가하여 오히려 성능 저하.
+- DB Pool 10 환경: 비관적 락의 p95가 13.48s로 폭증, Redis 계층적 방어가 필수(p95 3.29s).
+- **결론:** 서버를 늘리기 전에 `application.yml`의 `maximum-pool-size` 튜닝이 먼저. 커넥션 풀 하나가 아키텍처 선택을 좌우함.
+
+**Redis 도입의 정당한 시점**
+- 자원이 여유로운 환경에서 Redis를 도입하면 **관리 비용만 증가**. 비관적 락이 충분히 동작하는 환경에서 섣불리 도입하지 마라.
 - **트래픽 대비 인프라 자원이 부족해지기 시작할 때**가 Redis를 꺼내야 할 시점.
+
+**Redis 보호 계층이 필요한 이유: 커넥션 풀은 "우리의 책임"**
+- 본 프로젝트에서 Redis를 앞에 둔 근본적 이유는 TPS가 아니라 **RDBMS의 커넥션 풀이라는 고정된 자원을 보호**하기 위해서임.
+- RDBMS, MongoDB 등 **커넥션 풀 기반 DB**를 직접 운영하는 경우, 커넥션 풀 크기 산정과 고갈 방지는 전적으로 엔지니어의 책임. 이것이 Redis 계층적 방어가 존재하는 이유.
+- 반면 DynamoDB, Firestore 등 **HTTP API 기반 관리형 서비스**는 커넥션 풀 개념이 없어 이 보호 계층 자체가 불필요함. 병목 관리를 서비스 제공자에게 위임(과금)한 것.
+- **병목이 사라진 것이 아니라, 누가 관리하느냐의 차이.** 관리형 서비스는 돈으로 위임하고, 자체 운영은 엔지니어링으로 해결한다.
+
+### 5. 동시성 제어는 쓰기 최적화의 출발점
+
+- 동시성 제어는 본질적으로 **쓰기 최적화(Write Optimization)** — 같은 데이터에 동시에 쓰려는 요청을 안전하고 효율적으로 처리하는 문제.
+- 본 프로젝트는 RDBMS 락 기반 전략을 검증했지만, 쓰기 최적화의 세계는 더 넓음: NoSQL(Cassandra LWW, DynamoDB Conditional Write), Redis 자료구조(Set 멱등성, Sorted Set 순서 보장), CQRS/Event Sourcing 등.
+- **상황에 맞는 도구를 선택하는 것**이 핵심이며, 본 프로젝트의 인사이트는 그 판단력의 기초.
 
 ---
 
@@ -101,7 +139,7 @@ flowchart LR
 ### 점진적 최적화 흐름 (Progressive Optimization)
 
 ```
-전체 엔티티 @Version 적용 (경합 감지 보험)
+전체 엔티티 @Version 적용 (경합 감지 모니터링)
         ↓
 낙관적 락 충돌 모니터링 (신호 감지)
         ↓
@@ -116,7 +154,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Start([🚀 선택 시작]) --> Base["0. 전체 엔티티 @Version 적용<br/>(경합 감지 보험)"]
+    Start([🚀 선택 시작]) --> Base["0. 전체 엔티티 @Version 적용<br/>(경합 감지 모니터링)"]
 
     Base --> Monitor{"충돌 모니터링 결과<br/>경합이 빈번한가?"}
 
@@ -154,9 +192,18 @@ make up
 # 2. 애플리케이션 빌드
 make build
 
-# 3. Capacity Test 실행 (Lua Script 모드)
-make test-capacity METHOD=lua-script
+# 3. Scenario 1: Complex Transaction - Pessimistic Lock (인프라 초기화 + 워밍업 자동 포함)
+make test-complex-pessimistic
 ```
+
+### 다른 시나리오 실행
+
+| 시나리오 | 명령어 | 상세 |
+|:---|:---|:---|
+| **1. Complex Transaction** | `make test-complex-pessimistic` | [리포트](docs/reports/1-complex-transaction-report.md) |
+| **2. Low Contention** | `make test-low-contention-pessimistic` | [리포트](docs/reports/2-low-contention-report.md) |
+| **3. Resource Protection** | `make test-resource-protection-redis-optimistic` | [리포트](docs/reports/3-resource-protection-report.md) |
+| **4. Extreme Performance** | `make test-extreme-lua` | [리포트](docs/reports/4-extreme-performance-report.md) |
 
 ---
 
