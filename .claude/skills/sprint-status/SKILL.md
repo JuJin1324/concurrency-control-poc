@@ -153,9 +153,9 @@ description: "현재 Sprint의 진행 상황을 시각화하여 보여줍니다.
 
 ## 추가 정보 제공
 
-### Iteration 진행 상황 (선택)
+### US별 진행 상황 (선택)
 
-Sprint Plan에 Iteration 구조가 있는 경우:
+Sprint Plan에 US 구조가 있는 경우:
 
 ```
 📊 Sprint 0 진행 상황
@@ -171,16 +171,16 @@ Sprint Plan에 Iteration 구조가 있는 경우:
 - ✅ ADR-002: PoC 범위 축소 근거
 - ✅ ADR-003: 시각화 우선 워크플로우
 
-### Iteration 1: 인프라 환경 구축 ✅ (100%)
+### US-0.1: 인프라 환경 구축 ✅ (100%)
 - ✅ 인프라 다이어그램 완성
 - ✅ ADR-004 완성
 - ✅ Docker Compose 구현
 
-### Iteration 2: 프로젝트 스캐폴딩 ✅ (100%)
+### US-0.2: 프로젝트 스캐폴딩 ✅ (100%)
 - ✅ 애플리케이션 구조 다이어그램 완성
 - ✅ Spring Boot 프로젝트 생성
 
-### Iteration 3: 문서화 ✅ (100%)
+### US-0.3: 문서화 ✅ (100%)
 - ✅ README 작성
 - ✅ C4 Diagram 작성
 ```
@@ -266,9 +266,8 @@ plan.md에 Blockers 섹션이 있으면:
 
 ---
 
-**버전:** 2.0.0
-**최종 업데이트:** 2026-01-22
+**버전:** 3.0.0
+**최종 업데이트:** 2026-02-09
 **변경 사항:**
-- agile-sprint를 3개의 독립 스킬로 분리
-- sprint-status에 필요한 컨텍스트만 포함
-- Iteration 기반 진행 상황 표시 추가
+- **Breaking:** Iteration 중간 계층 제거, Sprint > US 2단계 구조로 단순화
+- US별 진행 상황 표시로 변경
