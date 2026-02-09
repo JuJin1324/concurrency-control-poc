@@ -32,7 +32,7 @@ public class OptimisticResourceProtectionService implements ResourceProtectionSe
 
         stock.decrease(amount);
         
-        // Stock entity has @Version, so Spring Data JPA will handle Optimistic Locking on save/flush.
+        // Stock 엔티티에 @Version이 설정되어 있어, saveAndFlush 호출 시점에 낙관적 락(Optimistic Locking) 검증이 수행됩니다.
         stockRepository.saveAndFlush(stock);
     }
 }

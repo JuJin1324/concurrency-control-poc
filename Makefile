@@ -39,50 +39,68 @@ redis:
 
 # --- [Data Management] ---
 
-# 데이터 전체 리셋 (Default: 100개)
-reset:
-	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 100);" 2>/dev/null
-	@docker compose exec redis redis-cli set stock:1 100 > /dev/null
-	@echo "🔄 Reset: Stock = 100"
-
-# 데이터 리셋 (100개 상품, 각 재고 100개씩 - Low Contention Scenario)
-reset-100:
-	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 100), ('PRODUCT-002', 100), ('PRODUCT-003', 100), ('PRODUCT-004', 100), ('PRODUCT-005', 100), ('PRODUCT-006', 100), ('PRODUCT-007', 100), ('PRODUCT-008', 100), ('PRODUCT-009', 100), ('PRODUCT-010', 100), ('PRODUCT-011', 100), ('PRODUCT-012', 100), ('PRODUCT-013', 100), ('PRODUCT-014', 100), ('PRODUCT-015', 100), ('PRODUCT-016', 100), ('PRODUCT-017', 100), ('PRODUCT-018', 100), ('PRODUCT-019', 100), ('PRODUCT-020', 100), ('PRODUCT-021', 100), ('PRODUCT-022', 100), ('PRODUCT-023', 100), ('PRODUCT-024', 100), ('PRODUCT-025', 100), ('PRODUCT-026', 100), ('PRODUCT-027', 100), ('PRODUCT-028', 100), ('PRODUCT-029', 100), ('PRODUCT-030', 100), ('PRODUCT-031', 100), ('PRODUCT-032', 100), ('PRODUCT-033', 100), ('PRODUCT-034', 100), ('PRODUCT-035', 100), ('PRODUCT-036', 100), ('PRODUCT-037', 100), ('PRODUCT-038', 100), ('PRODUCT-039', 100), ('PRODUCT-040', 100), ('PRODUCT-041', 100), ('PRODUCT-042', 100), ('PRODUCT-043', 100), ('PRODUCT-044', 100), ('PRODUCT-045', 100), ('PRODUCT-046', 100), ('PRODUCT-047', 100), ('PRODUCT-048', 100), ('PRODUCT-049', 100), ('PRODUCT-050', 100), ('PRODUCT-051', 100), ('PRODUCT-052', 100), ('PRODUCT-053', 100), ('PRODUCT-054', 100), ('PRODUCT-055', 100), ('PRODUCT-056', 100), ('PRODUCT-057', 100), ('PRODUCT-058', 100), ('PRODUCT-059', 100), ('PRODUCT-060', 100), ('PRODUCT-061', 100), ('PRODUCT-062', 100), ('PRODUCT-063', 100), ('PRODUCT-064', 100), ('PRODUCT-065', 100), ('PRODUCT-066', 100), ('PRODUCT-067', 100), ('PRODUCT-068', 100), ('PRODUCT-069', 100), ('PRODUCT-070', 100), ('PRODUCT-071', 100), ('PRODUCT-072', 100), ('PRODUCT-073', 100), ('PRODUCT-074', 100), ('PRODUCT-075', 100), ('PRODUCT-076', 100), ('PRODUCT-077', 100), ('PRODUCT-078', 100), ('PRODUCT-079', 100), ('PRODUCT-080', 100), ('PRODUCT-081', 100), ('PRODUCT-082', 100), ('PRODUCT-083', 100), ('PRODUCT-084', 100), ('PRODUCT-085', 100), ('PRODUCT-086', 100), ('PRODUCT-087', 100), ('PRODUCT-088', 100), ('PRODUCT-089', 100), ('PRODUCT-090', 100), ('PRODUCT-091', 100), ('PRODUCT-092', 100), ('PRODUCT-093', 100), ('PRODUCT-094', 100), ('PRODUCT-095', 100), ('PRODUCT-096', 100), ('PRODUCT-097', 100), ('PRODUCT-098', 100), ('PRODUCT-099', 100), ('PRODUCT-100', 100);" 2>/dev/null
-	@echo "🔄 Reset: 100 products, each with stock = 100"
-
-# 데이터 리셋 (N개 상품 - 충돌률 조절용)
-# Usage: make reset-products PRODUCTS=20 QUANTITY=20000
-reset-products:
-	@PRODUCTS=$(or $(PRODUCTS),10); \
+# 통합 데이터 리셋 (기본값: 1개 상품, 100개 재고)
+# Usage: make reset-data PRODUCTS=5 QUANTITY=100000
+reset-data:
+	@echo "🔄 Resetting all data (Stock, Point, OrderHistory)..."
+	@PRODUCTS=$(or $(PRODUCTS),1); \
 	QUANTITY=$(or $(QUANTITY),100); \
 	VALUES=$$(for i in $$(seq 1 $$PRODUCTS); do printf "('PRODUCT-%03d', $$QUANTITY)" $$i; [ $$i -lt $$PRODUCTS ] && printf ", "; done); \
-	docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES $$VALUES;" 2>/dev/null
-	@echo "🔄 Reset: $(or $(PRODUCTS),10) products, each with stock = $(or $(QUANTITY),100)"
+	docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e " \
+		TRUNCATE TABLE stock; \
+		TRUNCATE TABLE point; \
+		TRUNCATE TABLE order_history; \
+		INSERT INTO stock (product_id, quantity) VALUES $$VALUES; \
+		INSERT INTO point (user_id, balance) VALUES (1, 1000000); \
+	" 2>/dev/null
+	@docker compose exec redis redis-cli flushall > /dev/null
+	@echo "🔄 Syncing to Redis..."
+	@for i in $$(seq 1 $$PRODUCTS); do \
+		curl -s -X POST http://localhost:8080/api/stock/$$i/sync > /dev/null 2>&1; \
+	done
+	@echo "✅ Reset Complete: $$PRODUCTS products ($$QUANTITY each), Redis Synced, Tables Truncated."
 
-# 데이터 리셋 (1,000개 - High Load)
+# 시나리오별 리셋 단축 타겟
+reset:
+	@make reset-data PRODUCTS=1 QUANTITY=100
+
+reset-100:
+	@make reset-data PRODUCTS=100 QUANTITY=100
+
 reset-1k:
-	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 1000);" 2>/dev/null
-	@docker compose exec redis redis-cli set stock:1 1000 > /dev/null
-	@echo "🔄 Reset: Stock = 1,000"
+	@make reset-data PRODUCTS=1 QUANTITY=1000
 
-# 데이터 리셋 (10,000개 - Extreme Load)
 reset-10k:
-	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 10000);" 2>/dev/null
-	@docker compose exec redis redis-cli set stock:1 10000 > /dev/null
-	@echo "🔄 Reset: Stock = 10,000"
+	@make reset-data PRODUCTS=1 QUANTITY=10000
+
+reset-complex:
+	@make reset-data PRODUCTS=1 QUANTITY=1000
+
+reset-resource-protection:
+	@make reset-data PRODUCTS=5 QUANTITY=100000
+
+reset-low-contention:
+	@make reset-data PRODUCTS=100 QUANTITY=100
+
+reset-extreme:
+	@make reset-data PRODUCTS=5 QUANTITY=100000
+
+# --- [Display Utilities] ---
 
 # 모든 관련 테이블 상태 통합 조회 (정합성 검증용)
 show-db:
 	@echo "\n📊 [Database Consistency Check]"
 	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e " \
-		SELECT 'STOCK' as table_name, id, quantity, version FROM stock WHERE id = 1; \
+		SELECT 'STOCK' as table_name, id, quantity, version FROM stock WHERE id BETWEEN 1 AND 5; \
+		SELECT 'TOTAL_STOCK' as table_name, SUM(quantity) as total_quantity, SUM(version) as total_version FROM stock WHERE id BETWEEN 1 AND 5; \
 		SELECT 'POINT' as table_name, user_id, balance, version FROM point WHERE user_id = 1; \
 		SELECT 'ORDER' as table_name, count(*) as 'total_history_count' FROM order_history; \
 	" 2>/dev/null
 
-# Redis 재고 데이터 조회 (stock:1)
+# Redis 재고 데이터 조회 (stock:1~5) 및 합계
 show-redis:
-	@docker compose exec redis redis-cli get stock:1
+	@echo "\n📊 [Redis Stock Status]"
+	@docker compose exec redis redis-cli mget stock:1 stock:2 stock:3 stock:4 stock:5 | awk 'BEGIN {sum=0; i=1} {if ($$0 != "") {print "stock:" i ": " $$0; sum+=$$0; i++}} END {print "------------------\nTotal Stock: " sum}'
 
 # --- [Test Utilities] ---
 
@@ -127,32 +145,23 @@ test-stress: warmup
 	@echo "🚀 Starting Stress Test (METHOD=$(or $(METHOD),pessimistic), TARGET_RPS=$(or $(TARGET_RPS),2000))"
 	$(K6_CMD) -e METHOD=$(or $(METHOD),pessimistic) -e TARGET_RPS=$(or $(TARGET_RPS),2000) /scripts/stress.js
 
-# --- [Best Fit Scenario Targets] ---
+# --- [Scenario 1: Complex Transaction] ---
 
-# Scenario 1: Complex Transaction 리셋
-reset-complex:
-	@docker compose exec mysql mysql -u app_user -papp_password concurrency_db -e "TRUNCATE TABLE stock; TRUNCATE TABLE point; TRUNCATE TABLE order_history; INSERT INTO stock (product_id, quantity) VALUES ('PRODUCT-001', 1000); INSERT INTO point (user_id, balance) VALUES (1, 100000); " 2>/dev/null
-	@echo "🔄 Reset Scenario 1: Stock=1,000, Point=100k, OrderHistory=0"
-
-# Scenario 1: Pessimistic Test
-test-complex-pessimistic: warmup reset-complex
+test-complex-pessimistic: reset-infra warmup reset-complex
 	@echo "🚀 Starting Complex Transaction Scenario (Pessimistic)"
 	$(K6_CMD) -e METHOD=pessimistic /scripts/1-complex-transaction.js
 	@make show-db
 
-# Scenario 1: Optimistic No-Retry Test
-test-complex-optimistic-no-retry: warmup reset-complex
+test-complex-optimistic-no-retry: reset-infra warmup reset-complex
 	@echo "🚀 Starting Complex Transaction Scenario (Optimistic No-Retry)"
 	$(K6_CMD) -e METHOD=optimistic-no-retry /scripts/1-complex-transaction.js
 	@make show-db
 
-# Scenario 1: Optimistic Retry Test
-test-complex-optimistic-retry: warmup reset-complex
+test-complex-optimistic-retry: reset-infra warmup reset-complex
 	@echo "🚀 Starting Complex Transaction Scenario (Optimistic Retry)"
 	$(K6_CMD) -e METHOD=optimistic-retry /scripts/1-complex-transaction.js
 	@make show-db
 
-# Legacy Scenario 1 Target (Update to use pessimistic)
 test-complex-transaction: test-complex-pessimistic
 
 # 인프라 완전 재시작 (격리된 테스트 환경 보장)
@@ -164,62 +173,66 @@ reset-infra:
 	@echo "⏳ Waiting for DB to be ready..."
 	@sleep 10
 
-# Scenario 2: Low Contention 리셋
-# Usage: make reset-low-contention PRODUCTS=100 QUANTITY=100
-reset-low-contention:
-	@make reset-products PRODUCTS=$(or $(PRODUCTS),100) QUANTITY=$(or $(QUANTITY),100)
-	@echo "🔄 Reset Scenario 2: $(or $(PRODUCTS),100) products, each stock=$(or $(QUANTITY),100)"
+# --- [Scenario 2: Low Contention] ---
 
-# Scenario 2: Pessimistic Test
-test-low-contention-pessimistic: warmup reset-low-contention
+test-low-contention-pessimistic: reset-infra warmup reset-low-contention
 	@echo "🚀 Starting Low Contention Scenario (Pessimistic)"
 	$(K6_CMD) -e METHOD=pessimistic -e PRODUCT_COUNT=100 /scripts/2-low-contention.js
 	@make show-db
 
-# Scenario 2: Optimistic No-Retry Test
-test-low-contention-optimistic-no-retry: warmup reset-low-contention
+test-low-contention-optimistic-no-retry: reset-infra warmup reset-low-contention
 	@echo "🚀 Starting Low Contention Scenario (Optimistic No-Retry)"
 	$(K6_CMD) -e METHOD=optimistic-no-retry -e PRODUCT_COUNT=100 /scripts/2-low-contention.js
 	@make show-db
 
-# Scenario 2: Optimistic Retry Test
-test-low-contention-optimistic-retry: warmup reset-low-contention
+test-low-contention-optimistic-retry: reset-infra warmup reset-low-contention
 	@echo "🚀 Starting Low Contention Scenario (Optimistic Retry)"
 	$(K6_CMD) -e METHOD=optimistic-retry -e PRODUCT_COUNT=100 /scripts/2-low-contention.js
 	@make show-db
 
-# Legacy Low Contention Test (Scenario 2)
 test-low-contention: test-low-contention-pessimistic
 
 # --- [Scenario 3: Resource Protection] ---
 
-# Scenario 3: Resource Protection 리셋
-reset-resource-protection:
-	@make reset-products PRODUCTS=5 QUANTITY=100000
-	@echo "🔄 Reset Scenario 3: 5 products, each stock=100,000"
-
-# Scenario 3: Pessimistic Test
 test-resource-protection-pessimistic: reset-infra warmup reset-resource-protection
 	@echo "🚀 Starting Resource Protection Scenario (Pessimistic)"
 	$(K6_CMD) -e METHOD=pessimistic /scripts/3-resource-protection.js
 	@make show-db
 
-# Scenario 3: Redis-Optimistic Test
 test-resource-protection-redis-optimistic: reset-infra warmup reset-resource-protection
 	@echo "🚀 Starting Resource Protection Scenario (Redis-Optimistic)"
 	$(K6_CMD) -e METHOD=redis-optimistic /scripts/3-resource-protection.js
 	@make show-db
 
-# Scenario 3: Optimistic (No-Retry) Test
 test-resource-protection-optimistic: reset-infra warmup reset-resource-protection
 	@echo "🚀 Starting Resource Protection Scenario (Optimistic No-Retry)"
 	$(K6_CMD) -e METHOD=optimistic /scripts/3-resource-protection.js
 	@make show-db
+
+# --- [Scenario 4: Extreme Performance (No Delay)] ---
+
+test-extreme-pessimistic: reset-infra warmup reset-extreme
+	@echo "🚀 Starting Scenario 4 (Pessimistic - No Delay)"
+	$(K6_CMD) -e METHOD=pessimistic /scripts/4-extreme-performance.js
+	@make show-db
+
+test-extreme-optimistic: reset-infra warmup reset-extreme
+	@echo "🚀 Starting Scenario 4 (Optimistic - No Delay)"
+	$(K6_CMD) -e METHOD=optimistic /scripts/4-extreme-performance.js
+	@make show-db
+
+test-extreme-redis: reset-infra warmup reset-extreme
+	@echo "🚀 Starting Scenario 4 (Redis Lock - No Delay)"
+	$(K6_CMD) -e METHOD=redis /scripts/4-extreme-performance.js
+	@make show-db
+
+test-extreme-lua: reset-infra warmup reset-extreme
+	@echo "🚀 Starting Scenario 4 (Lua Script - No Delay)"
+	$(K6_CMD) -e METHOD=lua /scripts/4-extreme-performance.js
+	@make show-redis
 
 # Legacy Low Contention Test (Sprint 1-6)
 test-low-contention-v1: warmup
 	@make reset-100
 	@echo "🚀 Starting Legacy Low Contention Test"
 	$(K6_CMD) -e METHOD=$(or $(METHOD),optimistic) -e VUS=$(or $(VUS),1000) -e ITERATIONS=$(or $(ITERATIONS),1000) /scripts/2-low-contention.js
-
-

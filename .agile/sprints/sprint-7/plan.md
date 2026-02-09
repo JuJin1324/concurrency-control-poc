@@ -152,25 +152,21 @@
 
 **핵심 질문:** "Redis가 없는 낙관적 락 vs Redis가 있는 낙관적 락 — Redis의 보호 효과는 정량적으로 얼마인가?"
 
-#### US-7.6: Lua Script - "Redis as Primary Storage" 구현
-- [ ] US-7.5 시나리오 확장: 동일 전장(500 VUs vs DB Pool 10)에 Lua Script 투입
-  - DB 없이 Redis만으로 재고 차감 처리 (동일 비즈니스 로직)
-  - Sprint 5 Lua Script 구현체 활용
-  - US-7.5의 k6 시나리오를 확장하여 Lua Script 테스트 추가
-- [ ] 3자 비교 성능 측정
-  - Pessimistic (DB 단독) — US-7.5 데이터 재활용
-  - Redis+Optimistic (계층적 보호) — US-7.5 데이터 재활용
-  - Lua Script (Redis 단독) — 신규 측정
-- [ ] 트레이드오프 분석
-  - DB 의존도 스펙트럼: DB 단독 → DB+Redis → Redis 단독
-  - 영속성: Redis 장애 시 데이터 유실 가능성 분석
-  - 운영 복잡도: Redis 단독 운영 시 DB 동기화를 위한 EDA(이벤트 기반 아키텍처) 등 추가 시스템 필요성 정리
-  - Redis 단독의 숨겨진 비용: 성능은 얻지만 동기화 인프라(Kafka, CDC 등)라는 새로운 복잡도가 추가됨
-- [ ] 가설 검증: "DB 의존도를 완전히 제거하면 극한 성능을 얻지만, 영속성이라는 대가를 치른다"
+#### US-7.6: Scenario 4 - "Extreme Performance Comparison" 구현 및 검증
+- [x] 시나리오 4 설계 및 구현: 비즈니스 지연(100ms)이 없는 극한 성능 환경 구축
+- [x] 전장 통일: Pessimistic, Optimistic, Redis Lock, Lua Script 4개 방식의 순수 오버헤드 측정
+- [x] 4자 비교 성능 측정 (500 VUs, DB Pool 10, No Delay)
+- [x] 리포트 작성: `docs/reports/4-extreme-performance-report.md` (비즈니스 로직 제약 및 운영 트레이드오프 분석 포함)
+- [x] 가설 검증: "지연이 없을 때 Lua Script는 독보적이며, 비관적 락은 낙관적 락과 대등한 성능을 보임"
+
+#### US-7.6.1: 시나리오 1, 2 재측정 (환경 일관성 확보)
+- [ ] 시나리오 1 (Complex Transaction) 재측정: `reset-infra` 적용 환경에서 데이터 갱신
+- [ ] 시나리오 2 (Low Contention) 재측정: `reset-infra` 적용 환경에서 데이터 갱신
+- [ ] 기존 리포트(`1-complex-transaction-report.md`, `2-low-contention-report.md`) 최신 데이터로 업데이트
 
 **Acceptance Criteria:**
-- 동일 전장(500 VUs, DB Pool 10)에서 3자 비교를 통한 DB 의존도별 트레이드오프 정량화
-- 성능 우위뿐 아니라 **포기하는 것(영속성, 장애 복구)**을 명확히 문서화
+- 모든 시나리오(1~4)가 동일한 `reset-infra` 환경에서 측정되어 비교 데이터의 신뢰성 확보
+- 시나리오 4의 극한 성능 데이터 확보 및 문서화 완료
 
 **✅ Iteration 3 완료 조건:**
 - Redis Lock, Lua Script 각각의 Best Fit 증명 완료

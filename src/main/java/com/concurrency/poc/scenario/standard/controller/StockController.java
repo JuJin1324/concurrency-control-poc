@@ -50,6 +50,17 @@ public class StockController {
         return ResponseEntity.ok(stockService.getStock(id));
     }
 
+    /**
+     * Lua Script 사용을 위해 DB 재고를 Redis로 동기화하는 API
+     */
+    @PostMapping("/{id}/sync")
+    public ResponseEntity<Void> syncStock(@PathVariable Long id) {
+        com.concurrency.poc.scenario.standard.service.LuaScriptStockService luaService = 
+            (com.concurrency.poc.scenario.standard.service.LuaScriptStockService) stockServiceMap.get("luaScriptStockService");
+        luaService.syncStockToRedis(id);
+        return ResponseEntity.ok().build();
+    }
+
     private StockService getStockService(String method) {
         String beanName = switch (method.toLowerCase()) {
             case "pessimistic", "pessimistic-lock" -> "pessimisticLockStockService";
