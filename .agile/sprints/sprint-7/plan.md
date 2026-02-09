@@ -209,25 +209,25 @@
   - 체크리스트: 동시성 제어 전략 / 인프라 튜닝 / 테스트 및 운영 3분류로 확장
 
 #### US-7.9: 프로젝트 최종 회고 작성
-- [ ] `.agile/sprints/sprint-7/retrospective.md` 작성
-- [ ] Sprint 0-7 전체 여정 정리
+- [x] `.agile/sprints/sprint-7/retrospective.md` 작성
+- [x] Sprint 0-7 전체 여정 정리
   - 각 Sprint의 목표와 성과
   - Phase별 진화 과정
-- [ ] PoC 목표 달성도 평가
-- [ ] **[NEW]** 애자일 & MVP 접근법 회고 (면접 어필 포인트)
+- [x] PoC 목표 달성도 평가
+- [x] **[NEW]** 애자일 & MVP 접근법 회고 (면접 어필 포인트)
   - 왜 Sprint 단위로 나눴는가?
   - MVP 마인드셋: 완벽보다 빠른 검증
   - 선(先) 구현, 후(後) 연구의 학습 효과
   - 작은 단위 반복(Iteration)의 가치
   - 시니어 엔지니어로서의 성장 포인트
-- [ ] 이직 시장 어필 포인트 최종 정리
+- [x] 이직 시장 어필 포인트 최종 정리
   - 기술적 깊이 (4가지 방식 구현 + 최적화)
   - 운영 관점 (실무 사례 분석 + Best Fit 검증)
   - 프로세스 역량 (애자일 스프린트 + MVP)
-- [ ] 배운 것 (Lessons Learned)
-  - 기술적 인사이트
-  - 프로젝트 관리 인사이트
-- [ ] 향후 확장 가능성 (Optional)
+- [x] 배운 것 (Lessons Learned)
+  - 기술적 인사이트 9개
+  - 프로젝트 관리 인사이트 5개
+- [x] 향후 확장 가능성 (Optional)
 
 **✅ Iteration 4 완료 조건:**
 - Best Fit Verification 리포트 완성
@@ -239,31 +239,31 @@
 ## Sprint 7 Definition of Done
 
 ### Iteration 1: 시나리오 설계 및 준비
-- [ ] 4가지 Best Fit 시나리오 상세 정의 완료
-- [ ] 가설 및 검증 지표 확정
-- [ ] ADR 작성 완료
-- [ ] 테스트 환경 설계 완료
+- [x] 4가지 Best Fit 시나리오 상세 정의 완료
+- [x] 가설 및 검증 지표 확정
+- [x] ADR 작성 완료
+- [x] 테스트 환경 설계 완료
 
 ### Iteration 2: Pessimistic & Optimistic 검증
-- [ ] Complex Transaction 시나리오 검증 완료
-- [ ] Read-Heavy 시나리오 검증 완료
-- [ ] 성능 데이터 수집 완료
+- [x] Complex Transaction 시나리오 검증 완료
+- [x] Read-Heavy 시나리오 검증 완료
+- [x] 성능 데이터 수집 완료
 
 ### Iteration 3: Redis & Lua 검증
-- [ ] Resource Protection 시나리오 검증 완료
-- [ ] Atomic Counter 시나리오 검증 완료
-- [ ] 4가지 방식 전체 검증 완료
+- [x] Resource Protection 시나리오 검증 완료
+- [x] Atomic Counter 시나리오 검증 완료
+- [x] 4가지 방식 전체 검증 완료
 
 ### Iteration 4: 통합 및 문서화
-- [ ] Best Fit Verification 리포트 완성
-- [ ] README 최종 업데이트
-- [ ] 프로젝트 최종 회고 작성
+- [x] Best Fit Verification 리포트 완성
+- [x] README 최종 업데이트
+- [x] 프로젝트 최종 회고 작성
 
 ### 최종 검증
-- [ ] 4가지 Best Fit 시나리오 모두 검증 완료
-- [ ] 모든 가설 검증 결과 문서화
-- [ ] 포트폴리오 이직 시장 제출 가능 상태
-- [ ] GitHub 프로필 핀 고정 준비 완료
+- [x] 4가지 Best Fit 시나리오 모두 검증 완료
+- [x] 모든 가설 검증 결과 문서화
+- [x] 포트폴리오 이직 시장 제출 가능 상태
+- [x] GitHub 프로필 핀 고정 준비 완료
 
 ---
 
