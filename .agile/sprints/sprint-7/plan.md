@@ -160,9 +160,9 @@
 - [x] 가설 검증: "지연이 없을 때 Lua Script는 독보적이며, 비관적 락은 낙관적 락과 대등한 성능을 보임"
 
 #### US-7.6.1: 시나리오 1, 2 재측정 (환경 일관성 확보)
-- [ ] 시나리오 1 (Complex Transaction) 재측정: `reset-infra` 적용 환경에서 데이터 갱신
-- [ ] 시나리오 2 (Low Contention) 재측정: `reset-infra` 적용 환경에서 데이터 갱신
-- [ ] 기존 리포트(`1-complex-transaction-report.md`, `2-low-contention-report.md`) 최신 데이터로 업데이트
+- [x] 시나리오 1 (Complex Transaction) 재측정: `reset-infra` 적용 환경에서 데이터 갱신
+- [x] 시나리오 2 (Low Contention) 재측정: `reset-infra` 적용 환경에서 데이터 갱신
+- [x] 기존 리포트(`1-complex-transaction-report.md`, `2-low-contention-report.md`) 최신 데이터로 업데이트
 
 **Acceptance Criteria:**
 - 모든 시나리오(1~4)가 동일한 `reset-infra` 환경에서 측정되어 비교 데이터의 신뢰성 확보
