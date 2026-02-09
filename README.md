@@ -2,7 +2,7 @@
 
 > **이커머스 재고 시스템의 대규모 트래픽 처리를 위한 동시성 제어 전략 검증 프로젝트**
 >
-> 5,000명의 동시 접속자가 100개의 한정 수량을 경쟁하는 **선착순 이벤트(Hot Deal)** 상황에서, 데이터 정합성을 보장하면서 최대의 성능을 내는 최적의 아키텍처를 엔지니어링 관점에서 탐구했습니다.
+> "은탄환은 없다. 적재적소(Right Tool for Right Job)만 있을 뿐." — 4가지 동시성 제어 방식을 각각의 **Best Fit 시나리오**에서 검증하여, 기술의 우열이 아닌 **상황에 따른 최적 선택**을 실제 성능으로 증명했습니다.
 
 [![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.1-green?style=flat-square)](https://spring.io/projects/spring-boot)
@@ -14,17 +14,18 @@
 
 ## 🏆 Executive Summary (핵심 성과)
 
-격리된 테스트 환경(Isolated Environment)에서 4가지 동시성 제어 기법을 정량적으로 비교한 결과, **Redis Lua Script**가 모든 지표에서 압도적인 우위를 점했습니다.
+4가지 동시성 제어 기법을 **상황별 Best Fit 시나리오**에서 검증한 결과, 절대적인 우승자는 없으며 비즈니스 맥락에 따라 최적 선택이 달라짐을 정량적으로 증명했습니다.
 
-| 시나리오 | 최적 방식 (Best Practice) | 달성 성과 | 핵심 요인 |
-| :--- | :--- | :--- | :--- |
-| **선착순 이벤트**<br>(5,000 VUs 경합) | 🥇 **Lua Script** | **10,539 TPS**<br>(Latency 1.0s) | • **Lock-free:** 락 대기 시간 제거<br>• **Fast Fail:** 재고 소진 시 즉시 응답 |
-| **최대 처리량**<br>(재고 10,000개) | 🥇 **Lua Script** | **1,583 TPS**<br>(Latency 120ms) | • **I/O 최소화:** DB 접근 없이 메모리 연산<br>• **원자성:** 스크립트 실행의 Atomic 보장 |
-| **안정성 임계점**<br>(RPS 1,000) | 🥇 **Lua Script** | **Latency 3ms** | • **리소스 효율:** 2 vCPU로 2,000 RPS 방어 |
+| 시나리오 | 우승자 | 핵심 인사이트 |
+|:---|:---|:---|
+| **복합 트랜잭션** (50 VUs, 고경합) | **Pessimistic Lock** | 자원 낭비 제로, 실질 처리량 1위 |
+| **저경합 분산 환경** (100 VUs, 100 상품) | **Pessimistic Lock** | TPS 차이 2.8%에 불과, 성공률 100% |
+| **고부하 자원 보호** (500 VUs, DB Pool 10) | **Redis + Optimistic** | Fail-fast로 DB 커넥션 보호 |
+| **극한 성능** (500 VUs, No Delay) | **Lua Script** | 독보적 3,491 TPS, 단 비즈니스 로직 제약 |
 
-> **결론:** 대규모 트래픽 환경에서는 **Redis Lua Script**를 도입하여 DB 부하를 0으로 만들고 처리량을 극대화해야 합니다.
+> **결론:** 비관적 락을 기본으로 시작하고, 낙관적 락(`@Version`) 충돌 모니터링으로 경합 지점을 식별한 뒤, 인프라 자원이 부족해지는 시점에 Redis를 도입하라.
 >
-> 📄 **[상세 성능 분석 리포트 보기 (Performance V2)](docs/reports/performance-v2.md)**
+> 📄 **[상세 성능 분석 리포트 (Performance V3)](docs/reports/performance-v3.md)** | [V2 (Sprint 5-6 기록)](docs/reports/performance-v2.md)
 
 ---
 
@@ -55,62 +56,81 @@ flowchart LR
 
 ### 1. 격리성 (Isolation)
 - **문제:** 이전 테스트의 잔재(Connection Pool, Cache)가 다음 테스트에 영향을 줌.
-- **해결:** `make clean && make up` 파이프라인을 통해 매 테스트 직전 인프라를 **Cold Start** 상태로 초기화.
+- **해결:** `reset-infra`(Docker 완전 재시작) 파이프라인을 통해 매 테스트 직전 인프라를 **Cold Start** 상태로 초기화.
 
-### 2. 시나리오 세분화
-- **Capacity Test:** 재고가 넉넉할 때(10k) 시스템이 처리할 수 있는 최대 TPS 측정. → **[리포트](docs/reports/capacity-report.md)**
-- **Contention Test:** 재고가 부족한(100개) 핫딜 상황에서 5,000명 동시 접속 시 안정성 검증. → **[리포트](docs/reports/contention-report.md)**
-- **Stress Test:** 부하를 점진적으로 늘려가며 응답 속도가 급증하는 임계점(Knee Point) 탐색. → **[리포트](docs/reports/stress-report.md)**
+### 2. Best Fit 시나리오 (Sprint 7)
+각 방식이 가장 빛나는 시나리오를 설계하여, 기술의 우열이 아닌 상황에 따른 최적 선택을 검증했습니다.
 
-### 3. 최적화 (Optimization)
+- **Scenario 1: Complex Transaction** — 복합 ACID 트랜잭션에서 비관적 락의 안정성 검증 → **[리포트](docs/reports/1-complex-transaction-report.md)**
+- **Scenario 2: Low Contention** — 저경합 분산 환경에서 낙관적 락 vs 비관적 락 종합 비교 → **[리포트](docs/reports/2-low-contention-report.md)**
+- **Scenario 3: Resource Protection** — 고부하(500 VUs)에서 Redis 계층적 방어의 필요성 증명 → **[리포트](docs/reports/3-resource-protection-report.md)**
+- **Scenario 4: Extreme Performance** — 비즈니스 지연 제거 시 순수 기술 오버헤드 비교 → **[리포트](docs/reports/4-extreme-performance-report.md)**
+
+### 3. 절대 비교 시나리오 (Sprint 5-6)
+동일 조건에서 4가지 방식을 절대적으로 비교하여 각 기술의 기본 특성을 파악했습니다.
+
+- **Capacity Test:** 재고가 넉넉할 때(10k) 최대 TPS 측정 → **[리포트](docs/reports/capacity-report.md)**
+- **Contention Test:** 재고 부족(100개) 핫딜 상황에서 5,000명 동시 접속 → **[리포트](docs/reports/contention-report.md)**
+- **Stress Test:** 부하 점진 증가, 임계점(Knee Point) 탐색 → **[리포트](docs/reports/stress-report.md)**
+
+### 4. 최적화 (Optimization)
 - **Virtual Threads:** Java 21 가상 스레드 도입으로 I/O 블로킹 비용 최소화.
-- **OS Tuning:** `ulimit`, `sysctl` 튜닝으로 10,000+ Connection 수용.
+- **의도적 자원 제한:** DB Pool 10으로 제한하여 자원 부족 상황을 유도, 각 방식의 병목 특성을 극대화하여 관찰.
 
 ---
 
-## 📊 성능 분석 (Performance Deep Dive)
+## 📊 핵심 인사이트 (Key Insights)
 
-### 왜 Redis Distributed Lock은 느린가?
-- **관찰:** 1,000 RPS 부하에서 p95 Latency가 **33ms**로 급증 (타 방식 3ms 대비 10배).
-- **원인:** 락을 획득(`lock`)하고 해제(`unlock`)하는 과정에서 **최소 2번 이상의 네트워크 왕복(RTT)**이 발생합니다. 트래픽이 몰릴수록 이 네트워크 비용이 누적되어 병목을 유발합니다.
+### "낙관적 락이 비관적 락보다 빠르다"는 통념의 검증
+- 저경합 환경에서조차 TPS 차이 **2.8%에 불과**, 재시도 포함 시 비관적 락에 역전.
+- 낙관적 락은 성능이 아닌 **경합 감지 보험(`@Version`)과 커넥션 효율성**에 존재 이유가 있음.
 
-### 왜 Lua Script는 압도적인가?
-- **관찰:** 2,000 RPS 부하에서도 Latency **2.7ms** 유지.
-- **원인:** 로직 전체를 Redis 서버로 전송하여 한 번에 실행합니다. **네트워크 왕복을 1회로 줄이고**, Redis의 싱글 스레드 특성을 이용해 **락 없이도 원자성을 보장**하므로 컨텍스트 스위칭 비용이 없습니다.
+### 비즈니스 로직 지연에 따른 순위 반전
+- 100ms 지연 시: Redis+Optimistic 1위 (154 TPS) vs Pessimistic 최하위 (36 TPS)
+- 0ms 지연 시: Pessimistic 2위 (978 TPS) vs Redis Lock 최하위 (602 TPS)
+- **기술 선택은 비즈니스 로직의 복잡도에 의해 결정**되어야 함.
+
+### Redis 도입의 정당한 시점
+- 자원이 널널한 환경(DB Pool 50)에서 Redis 도입은 네트워크 홉만 추가하여 오히려 성능 저하.
+- **트래픽 대비 인프라 자원이 부족해지기 시작할 때**가 Redis를 꺼내야 할 시점.
 
 ---
 
-## 🛡️ 운영 관점의 고찰 (Engineering Insights)
+## 🛡️ 실무 도입 전략 (Engineering Insights)
 
-단순한 구현을 넘어, 실제 서비스 환경에서의 **트레이드오프(Trade-off)**와 **장애 대응**을 심층 연구했습니다. (상세: [Practical Guide](docs/operations/PRACTICAL_GUIDE.md))
+### 점진적 최적화 흐름 (Progressive Optimization)
 
-### 2.1 실무 의사결정 가이드 (Decision Tree)
-상황에 맞는 최적의 동시성 제어 도구를 선택하는 가이드라인입니다.
+```
+전체 엔티티 @Version 적용 (경합 감지 보험)
+        ↓
+낙관적 락 충돌 모니터링 (신호 감지)
+        ↓
+경합 빈번 엔티티 식별 (분석)
+        ↓
+해당 엔티티만 비관적 락 적용 (타겟 솔루션)
+        ↓
+트래픽 증가 시 Redis 계층 추가 (스케일)
+```
+
+### 의사결정 가이드 (Decision Tree)
 
 ```mermaid
 flowchart TD
-    Start([🚀 선택 시작]) --> Q1{충돌 발생 시<br/>재시도가 자유롭고<br/>비용이 적은가?}
-    
-    Q1 -- "YES - 재시도 OK" --> Optimistic["⚡ Optimistic Lock<br/>낙관적 락"]
-    Q1 -- "NO - 한 번에 성공해야 함" --> Q2{트래픽이 순간적으로<br/>폭주하는가?}
-    
-    Q2 -- "NO - 일반적 트래픽" --> Pessimistic["🔒 Pessimistic Lock<br/>비관적 락"]
-    Q2 -- "YES - 고트래픽/핫스팟" --> Q3{비즈니스 로직이<br/>단순한가?}
-    
-    Q3 -- "YES - 단순 연산" --> LuaScript["🏎️ Redis Lua Script<br/>원자적 실행"]
-    Q3 -- "NO - 복잡/외부연동" --> RedisLock["🛡️ Redis Distributed Lock<br/>분산 락"]
-    
-    Optimistic --> Result1["✅ 장점: 락 비용 Zero<br/>⚠️ 조건: 충돌 드물어야 함"]
-    Pessimistic --> Result2["✅ 장점: 정합성 최고<br/>⚠️ 조건: DB 부하 감당"]
-    LuaScript --> Result3["✅ 장점: 극한의 TPS<br/>⚠️ 조건: 로직 간결 & Hot Key"]
-    RedisLock --> Result4["✅ 장점: DB 보호 & 제어<br/>💡 팁: 하이브리드 전략 가능"]
+    Start([🚀 선택 시작]) --> Base["0. 전체 엔티티 @Version 적용<br/>(경합 감지 보험)"]
+
+    Base --> Monitor{"충돌 모니터링 결과<br/>경합이 빈번한가?"}
+
+    Monitor -- "NO - 충돌 드묾" --> Keep["✅ 낙관적 락 유지<br/>추가 조치 불필요"]
+    Monitor -- "YES - 경합 식별됨" --> Q1{DB 커넥션 풀이<br/>병목인가?}
+
+    Q1 -- "NO - 자원 여유" --> Pessimistic["🔒 Pessimistic Lock<br/>해당 엔티티만 적용"]
+    Q1 -- "YES - 자원 부족" --> Q2{비즈니스 로직이<br/>단순한가?}
+
+    Q2 -- "NO - 복잡/지연 있음" --> RedisOpt["🛡️ Redis + Optimistic<br/>계층적 방어"]
+    Q2 -- "YES - 단순 연산" --> LuaScript["🏎️ Lua Script<br/>선별적 도입"]
 ```
 
-### 2.2 상세 운영 가이드 (Ops Guides)
-*   **[Pessimistic Lock 가이드](docs/operations/pessimistic-lock-ops.md):** DB 인덱스 락의 원리와 데드락 방지 전략.
-*   **[Optimistic Lock 가이드](docs/operations/optimistic-lock-ops.md):** 재시도 폭풍($O(N^2)$) 방지와 UX 패턴 분석.
-*   **[Redis Distributed Lock 가이드](docs/operations/redis-lock-ops.md):** Throttling을 통한 DB 보호 및 3단계 Fallback.
-*   **[Lua Script 가이드](docs/operations/lua-script-ops.md):** 성능의 경제학(Trust vs UX)과 벌크헤드(Bulkhead) 격리.
+상세 가이드: **[Practical Guide](docs/reports/practical-guide.md)**
 
 ---
 
@@ -119,7 +139,7 @@ flowchart TD
 - [x] **Sprint 0-2:** 4가지 동시성 제어 방식 구현 및 인프라 구축
 - [x] **Sprint 3-5:** k6 기반 부하 테스트 및 한계 돌파 (Virtual Threads 최적화)
 - [x] **Sprint 6:** **심화 연구 (Deep Dive)** - 실무 사례 분석 및 운영 가이드 집대성
-- [ ] **Sprint 7 (Upcoming):** **상황별 최적화 검증** - 각 방식의 'Best Fit' 시나리오 실제 증명
+- [x] **Sprint 7:** **상황별 최적화 검증 (Best Fit Verification)** - "은탄환은 없다"를 4가지 시나리오로 증명
 
 ---
 
@@ -142,7 +162,8 @@ make test-capacity METHOD=lua-script
 
 ## 📚 문서 (Documentation)
 
-- **[Performance Report V2](docs/reports/performance-v2.md)**: 최종 성능 분석 리포트
+- **[Performance Report V3](docs/reports/performance-v3.md)**: 상황별 최적화 검증 통합 리포트 (Sprint 7)
+- **[Performance Report V2](docs/reports/performance-v2.md)**: 절대 비교 성능 리포트 (Sprint 5-6)
 - **[Practical Guide](docs/reports/practical-guide.md)**: 실무 적용 가이드
 - **[Architecture](docs/architecture/system-overview.md)**: 시스템 설계도
 - **[k6 Study](docs/technology/k6-study.md)**: 부하 테스트 방법론

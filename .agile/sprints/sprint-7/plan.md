@@ -192,27 +192,21 @@
 - [x] 시나리오별 성능 비교 매트릭스 포함
 
 #### US-7.8: README 및 기존 문서 최종 업데이트
-- [ ] README 업데이트
-  - Best Fit Verification 섹션 추가
+- [x] README 업데이트
+  - Executive Summary: 시나리오별 Best Fit 결과로 변경
+  - 테스트 엔지니어링: Best Fit 시나리오(Sprint 7) + 절대 비교(Sprint 5-6) 구조화
+  - 핵심 인사이트: 통념 검증, 비즈니스 지연에 따른 순위 반전, Redis 도입 시점
+  - 의사결정 가이드: 점진적 최적화 흐름 + Decision Tree
   - 마일스톤에 Sprint 7 추가
-  - **[NEW]** "프로젝트 접근 방법" 섹션 추가
-    - 애자일 스프린트 기반 진행 (Sprint 0-7)
-    - MVP 사고방식: 작은 단위로 검증하며 확장
-    - 선(先) 구현, 후(後) 연구의 시너지 효과
-    - 시니어 엔지니어의 문제 해결 접근법
-- [ ] `docs/reports/performance-v2.md` 업데이트
-  - Best Fit 시나리오 섹션 추가
-  - 또는 best-fit-verification.md 링크 추가
-  - **[NEW] "인프라 자원과 Redis 도입의 상관관계" 인사이트 추가**
-    - Sprint 5~6(DB Pool 50): 자원 여유 → 비관적 락이 Redis Lock보다 빠름 (재시도 포함 낙관락보다도)
-    - Sprint 7(DB Pool 10): 자원 부족 → Redis의 진가 발휘 (Lua 1등, Redis Lock 2등, 낙관락 3등, 비관락 4등)
-    - 핵심 교훈: **자원이 널널한 환경에서 Redis 도입은 부질없다.** 비관적 락만으로 충분한 상황에서 Redis를 끼워넣으면 네트워크 홉만 추가되어 오히려 성능이 떨어짐
-    - Redis 도입의 정당한 시점: 트래픽 대비 인프라 자원이 부족해지기 시작할 때
-- [ ] `docs/reports/practical-guide.md` 업데이트
-  - **템플릿 기준:** 기존 구조 유지
-  - Section 1 (의사결정 매트릭스): Best Fit 시나리오 반영
-  - Section 2 (방식별 가이드): Best Fit 검증 결과 추가
-  - Section 3 (인프라 사이징): 필요 시 업데이트
+- [x] `docs/reports/performance-v2.md` — **업데이트 불필요 (로그성 문서)**
+  - V2는 Sprint 5-6 당시의 기준으로 작성된 역사적 기록
+  - V3(`performance-v3.md`)가 최신 통합 리포트로 대체
+- [x] `docs/reports/practical-guide.md` 업데이트
+  - 전략적 패러다임: "점진적 최적화 (Progressive Optimization)" 0→1→2단계 체계
+  - 의사결정 매트릭스: V3 인사이트 반영 (Optimistic 기본 → Pessimistic 타겟 → Redis 스케일)
+  - 방식별 가이드: 점진적 최적화 순서로 재구성 (①Optimistic → ②Pessimistic → ③Redis+Optimistic → ④Lua)
+  - 인프라 사이징: Spring Boot 4.0+ 기준, Redis 도입 시점 원칙 추가
+  - 체크리스트: 동시성 제어 전략 / 인프라 튜닝 / 테스트 및 운영 3분류로 확장
 
 #### US-7.9: 프로젝트 최종 회고 작성
 - [ ] `.agile/sprints/sprint-7/retrospective.md` 작성
