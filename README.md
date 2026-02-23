@@ -103,13 +103,28 @@ flowchart LR
 - Lua Script를 위해 도메인 로직을 간소화하면, 동일하게 간소화된 로직을 비관적 락으로 실행해도 **26.7배 TPS 향상**(36→978 TPS).
 - 즉, 단순히 TPS를 높이려면 **로직 간소화만으로 충분**. Lua Script의 진짜 가치는 DB 커넥션을 사용하지 않고 Redis에서 원자적으로 처리하여 **DB 자원을 근본적으로 보호**하는 것.
 
-### 3. 비즈니스 로직 지연에 따른 순위 반전
+### 3. 왜 성능이 좋은 비관락 대신 Redis + 낙관락이 트렌드인가?
+
+비관락은 고경합 환경에서 성능이 우수함에도(PoC 실증), Redis + 낙관락이 트렌드가 된 데에는 **비관락의 구조적 취약점** 때문입니다.
+
+비관락에서 데드락을 방지하려면 락 획득 순서를 일관되게 유지해야 합니다. 예를 들어 `stock → item` 순서로 락을 잡는 트랜잭션과 `item → stock` 순서로 잡는 트랜잭션이 공존하면 데드락이 발생합니다. 문제는 이 순서 규칙이 **코드가 아닌 팀 컨벤션에만 존재**한다는 것입니다.
+
+- 신규 입사자가 컨벤션을 모를 수 있음
+- 위반은 런타임에서만 드러남 — 코드 리뷰로 잡기 어려움
+- 팀과 코드베이스가 커질수록 컨벤션 유지 비용 증가
+- MSA 환경에서는 서비스 간 락 순서 협의 자체가 불가능
+
+반면 낙관락은 데드락이 원천적으로 없고, 충돌 시 `ObjectOptimisticLockingFailureException`이라는 **명시적 예외**로 처리 방식이 코드에 드러납니다. Redis는 낙관락의 고경합 약점(재시도 폭발)을 보완하면서 분산 환경에서도 일관된 제어를 제공합니다.
+
+- **결론:** 성능만 보면 비관락이 우수하지만, 팀 규모와 시스템 복잡도가 커질수록 **"명시적이고 안전한 실패"가 "암시적이지만 빠른 성공"보다 더 가치 있어집니다.**
+
+### 4. 비즈니스 로직 지연에 따른 순위 반전
 
 - 100ms 지연 시: Redis+Optimistic **1위** (154 TPS) vs Pessimistic **최하위** (36 TPS)
 - 0ms 지연 시: Pessimistic **2위** (978 TPS) vs Redis Lock **최하위** (602 TPS)
 - **결론:** 기술 선택은 벤치마크가 아니라 **비즈니스 로직의 복잡도**에 의해 결정되어야 함. 동일 기술이라도 비즈니스 맥락에 따라 1위도 꼴찌도 될 수 있음.
 
-### 4. 인프라 자원이 기술 선택을 결정한다
+### 5. 인프라 자원이 기술 선택을 결정한다
 
 **커넥션 풀 설정이 성능 천장을 결정**
 - DB Pool 50 환경: 비관적 락만으로 충분, Redis 도입은 네트워크 홉만 추가하여 오히려 성능 저하.
@@ -126,7 +141,7 @@ flowchart LR
 - 반면 DynamoDB, Firestore 등 **HTTP API 기반 관리형 서비스**는 커넥션 풀 개념이 없어 이 보호 계층 자체가 불필요함. 병목 관리를 서비스 제공자에게 위임(과금)한 것.
 - **병목이 사라진 것이 아니라, 누가 관리하느냐의 차이.** 관리형 서비스는 돈으로 위임하고, 자체 운영은 엔지니어링으로 해결한다.
 
-### 5. 동시성 제어는 쓰기 최적화의 출발점
+### 6. 동시성 제어는 쓰기 최적화의 출발점
 
 - 동시성 제어는 본질적으로 **쓰기 최적화(Write Optimization)** — 같은 데이터에 동시에 쓰려는 요청을 안전하고 효율적으로 처리하는 문제.
 - 본 프로젝트는 RDBMS 락 기반 전략을 검증했지만, 쓰기 최적화의 세계는 더 넓음: NoSQL(Cassandra LWW, DynamoDB Conditional Write), Redis 자료구조(Set 멱등성, Sorted Set 순서 보장), CQRS/Event Sourcing 등.
@@ -168,7 +183,7 @@ flowchart TD
     Q2 -- "YES - 단순 연산" --> LuaScript["🏎️ Lua Script<br/>선별적 도입"]
 ```
 
-상세 가이드: **[Practical Guide](docs/reports/practical-guide.md)**
+상세 가이드: **[Practical Guide](docs/operations/PRACTICAL_GUIDE.md)**
 
 ---
 
@@ -211,7 +226,7 @@ make test-complex-pessimistic
 
 - **[Performance Report V3](docs/reports/performance-v3.md)**: 상황별 최적화 검증 통합 리포트 (Sprint 7)
 - **[Performance Report V2](docs/reports/performance-v2.md)**: 절대 비교 성능 리포트 (Sprint 5-6)
-- **[Practical Guide](docs/reports/practical-guide.md)**: 실무 적용 가이드
+- **[Practical Guide](docs/operations/PRACTICAL_GUIDE.md)**: 실무 적용 가이드
 - **[Architecture](docs/architecture/system-overview.md)**: 시스템 설계도
 - **[k6 Study](docs/technology/k6-study.md)**: 부하 테스트 방법론
 
