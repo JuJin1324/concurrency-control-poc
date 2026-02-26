@@ -1,0 +1,4 @@
+interface:
+  display_name: "1H Agile Phase"
+  short_description: "2W 결과를 How 다이어그램과 Phase 계획으로 구조화"
+  default_prompt: "Use $1h-agile-phase to convert 2W notes into a scoped Mermaid diagram, phased roadmap, and evaluation metrics."

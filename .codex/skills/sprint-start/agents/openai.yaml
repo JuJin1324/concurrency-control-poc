@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sprint Start"
+  short_description: "새 Sprint 목표와 태스크를 문서 기반으로 계획"
+  default_prompt: "Use $sprint-start to draft and initialize the next sprint plan from how-diagram.md and 2w-brainstorm.md."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "US Complete"
+  short_description: "User Story 완료 요약 작성과 커밋 흐름 정리"
+  default_prompt: "Use $us-complete to finalize a completed user story with a summary file, plan updates, and commit-ready notes."

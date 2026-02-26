@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sprint Complete"
+  short_description: "Sprint 회고 작성과 완료 지표 정리를 자동화"
+  default_prompt: "Use $sprint-complete to finalize the active sprint, calculate completion metrics, and generate retrospective notes."

@@ -1,12 +1,9 @@
 ---
 name: sprint-status
 description: "현재 Sprint의 진행 상황을 시각화하여 보여줍니다. 완료/진행 중/대기 중 태스크와 US 일정 상태(Ahead/On-track/Delayed)를 집계합니다."
-allowed-tools: Read,Glob,Grep,Bash
-disable-model-invocation: false
-user-invocable: true
 ---
 
-# Sprint Status
+# 스프린트 상태
 
 ## 목적
 

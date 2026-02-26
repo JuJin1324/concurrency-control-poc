@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sprint Status"
+  short_description: "현재 Sprint 진행률과 태스크 상태를 시각화"
+  default_prompt: "Use $sprint-status to parse the current sprint plan and report completion, in-progress work, and remaining tasks."

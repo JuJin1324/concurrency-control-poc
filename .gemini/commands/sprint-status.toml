@@ -1,0 +1,7 @@
+description = "Run sprint-status workflow"
+prompt = """
+Follow the skill instructions in ".gemini/skills/sprint-status/SKILL.md".
+
+Execute the workflow in order and keep outputs concise.
+If required files are missing, create a minimal template and proceed.
+"""
