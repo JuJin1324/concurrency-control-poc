@@ -208,12 +208,28 @@ Sprint N
   - Phase의 목표와 산출물 파악
 - 📚 `2w-brainstorm.md` 확인 (배경 컨텍스트 - 참고용)
 
-**3-2. Sprint 계획 초안 제안 (타임박싱):**
+**3-2. Phase 목표 일정 확인 및 조정:**
+- `how-diagram.md`에서 해당 Phase의 **목표 날짜**를 확인한다
+- ⚠️ how-diagram.md의 날짜는 **확정 일정이 아닌 목표 날짜**임을 인지
+- 사용자에게 목표 일정을 안내하고 그대로 진행할지 확인:
+  ```
+  📅 Phase N의 목표 일정: MM/DD ~ MM/DD (N일)
+  오늘 날짜: MM/DD
+
+  이 일정대로 진행할까요?
+  ```
+- **오늘이 목표 시작일을 이미 넘긴 경우**, 아래 대응을 제안:
+  1. 지연 일수 계산 및 안내
+  2. 남은 전체 기간에서 각 Phase 기간을 비례 축소하여 **조정안 제안**
+  3. Phase 범위를 축소하여 기간 내 완료 가능하도록 **범위 축소안 제안**
+  4. 사용자 선택에 따라 진행
+
+**3-3. Sprint 계획 초안 제안 (타임박싱):**
 - 파일 경로: `.agile/sprints/sprint-N/plan-draft.md`
 - **how-diagram.md의 Phase를 Sprint로 타임박싱**
   - Phase의 논리적 목표 → Sprint Goal
   - 산출물 → Tasks (체크리스트)
-  - 기간 설정 (타임박스)
+  - 기간 설정 (타임박스, 3-2에서 확정된 일정 반영)
 - 템플릿 형식으로 작성:
   - **Quick Guide (리뷰 전 30초 가이드)**
   - Sprint Goal
@@ -225,7 +241,7 @@ Sprint N
   - US 구조 (복잡한 Sprint의 경우)
   - Definition of Done
 
-**3-3. 사용자 검토 요청:**
+**3-4. 사용자 검토 요청:**
 ```
 📝 Sprint N 계획 초안을 생성했습니다.
 🌿 작업 브랜치: sprint-N

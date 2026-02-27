@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Skill Sync"
+  short_description: "다른 에이전트 스킬을 Codex 형식으로 동기화"
+  default_prompt: "Use $agent-skill-sync to convert selected Claude/Gemini skills into the current Codex skill format and verify the result."
