@@ -1,6 +1,9 @@
 ---
 name: 1h-agile-phase
 description: "2W(What/Why) 정의 후 How를 Mermaid 다이어그램과 Phase로 구조화하는 도구. 문제 해결 과정 시각화를 통한 범위/단계 통제."
+allowed-tools: Read,Write,Edit,Glob,Grep
+disable-model-invocation: false
+user-invocable: true
 ---
 
 
@@ -397,6 +400,10 @@ Phase 3: [제목] (MM/DD ~ MM/DD, N일)
 ```
 
 ---
+
+> 💡 **how-diagram.md는 Planning MVP다.**
+> Phase/범위/지표가 학습하면서 바뀌는 것은 자연스러운 과정이다.
+> 변경은 실패가 아니라 학습의 증거. → `problem-solving-principles.md` "12. 계획 MVP 원칙" 참조
 
 ## Success Criteria
 

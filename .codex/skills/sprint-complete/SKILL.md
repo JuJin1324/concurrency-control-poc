@@ -3,7 +3,7 @@ name: sprint-complete
 description: "Sprint를 완료하고 회고(Retrospective)를 작성합니다. Sprint Metrics를 계산하고, 잘된 점/아쉬운 점/개선 사항을 정리합니다."
 ---
 
-# 스프린트 완료
+# Sprint Complete
 
 ## 목적
 
@@ -28,8 +28,9 @@ Sprint를 공식적으로 완료하고, 회고를 통해 다음 Sprint에서 개
 ├── current-sprint.txt          # 현재 Sprint 번호 (완료 후 초기화)
 └── sprints/
     └── sprint-N/
-        ├── plan.md            # Sprint 계획
-        └── retrospective.md   # 회고 (완료 후 생성)
+        ├── plan.md                       # Sprint 계획
+        ├── us-{N.M}-retrospective.md     # US별 회고 (/us-complete, M=1,2,3...)
+        └── sprint-retrospective.md              # Sprint 회고 (완료 후 생성, US 회고 집약)
 ```
 
 ---
@@ -47,7 +48,19 @@ Q: "Sprint N을 완료하시겠습니까? (y/n)"
 - Sprint 계속 진행 안내
 - `/sprint-status`로 현황 확인 권장
 
-### Step 2: Sprint Metrics 계산
+### Step 2: US 회고 수집
+
+`.agile/sprints/sprint-N/us-*-retrospective.md` 파일을 모두 읽는다.
+
+각 US 회고에서 다음을 추출한다:
+- 배운 점 (핵심 키워드)
+- 의사결정 (선택 + 이유)
+- 아쉬운 점 / 개선할 점
+
+이 내용을 Sprint 회고 작성의 입력으로 사용한다.
+US 회고가 없는 경우 plan.md 기반으로만 작성한다.
+
+### Step 3: Sprint Metrics 계산
 
 **자동 계산:**
 - 전체 태스크 수
@@ -68,7 +81,7 @@ Q: "Sprint N을 완료하시겠습니까? (y/n)"
 - 완료: 15개
 - 완료율: 100%
 
-### Step 3: 회고 작성 (대화형 또는 자동)
+### Step 4: 회고 작성 (대화형 또는 자동)
 
 #### 방법 1: 대화형 회고 (기본)
 
@@ -97,32 +110,32 @@ Q4: 한 문장으로 핵심 교훈을 요약하면?
 > (사용자 입력)
 ```
 
-#### 방법 2: plan.md 기반 자동 회고 (선택)
+#### 방법 2: US 회고 기반 자동 회고 (선택)
 
 사용자가 "자동으로 작성해줘"를 선택하면:
-- plan.md의 완료/미완료 태스크 분석
-- Definition of Done 달성 여부 확인
+- `us-*-retrospective.md` 파일에서 배운 점/의사결정/아쉬운 점 수집
+- plan.md의 완료/미완료 태스크 + DoD 달성 여부 확인
 - Blockers 섹션 내용 요약
-- 초안 생성 후 사용자 검토 요청
+- US 회고들을 집약해 Sprint 회고 초안 생성 후 사용자 검토 요청
 
-### Step 4: Retrospective 파일 생성
+### Step 5: Retrospective 파일 생성
 
-**파일 경로:** `.agile/sprints/sprint-N/retrospective.md`
+**파일 경로:** `.agile/sprints/sprint-N/sprint-retrospective.md`
 
 **파일 내용:** (템플릿 참조)
 
-### Step 5: Sprint 종료 처리
+### Step 6: Sprint 종료 처리
 
 **완료 후:**
 - `current-sprint.txt` 초기화 (선택) 또는 다음 Sprint 번호로 업데이트
 - Sprint 완료일 기록
 
-### Step 6: 완료 메시지 출력
+### Step 7: 완료 메시지 출력
 
 ```
 ✅ Sprint N 회고가 완료되었습니다!
 
-📂 회고 파일: .agile/sprints/sprint-N/retrospective.md
+📂 회고 파일: .agile/sprints/sprint-N/sprint-retrospective.md
 
 📊 Sprint Metrics
 - 완료율: X%
@@ -306,16 +319,16 @@ Q4: 한 문장으로 핵심 교훈을 요약하면?
 ```markdown
 ## Sprint 0 Definition of Done
 
-### Sprint 시작 ✅
-- [x] ADR-001 완성
-- [x] ADR-002 완성
-
 ### US-{N}.1 ✅
-- [x] 인프라 다이어그램 완성
+- [x] Step-{N}.1.1: {산출물} 작성 + 리뷰 완료
+- [x] Step-{N}.1.2: {산출물} 작성 + 리뷰 완료
+
+### US-{N}.2 ✅
+- [x] Step-{N}.2.1: {산출물} 작성 + 리뷰 완료
 ```
 
 **계산:**
-- 각 US별 완료율
+- 각 US별 완료율 (Step 체크박스 기준)
 - 전체 DoD 달성률
 
 ---
@@ -345,7 +358,7 @@ Q4: 한 문장으로 핵심 교훈을 요약하면?
 - plan.md 파싱하여 Sprint Metrics 자동 계산
 - 회고 템플릿 제공
 - 대화형 질문으로 회고 가이드
-- retrospective.md 파일 생성
+- sprint-retrospective.md 파일 생성
 - Sprint 완료 처리 (current-sprint.txt 업데이트)
 
 ## ❌ AI가 하지 말아야 할 것
@@ -361,14 +374,21 @@ Q4: 한 문장으로 핵심 교훈을 요약하면?
 
 Sprint 완료 후:
 
-1. **retrospective.md 검토** - 회고 내용 확인 및 수정
+1. **sprint-retrospective.md 검토** - 회고 내용 확인 및 수정
 2. **Action Items 정리** - 다음 Sprint에 반영할 개선 사항 정리
 3. **`/sprint-start`** - 다음 Sprint 시작
 
 ---
 
-**버전:** 3.0.0
-**최종 업데이트:** 2026-02-09
+**버전:** 3.3.0
+**최종 업데이트:** 2026-02-28
 **변경 사항:**
-- **Breaking:** Iteration 중간 계층 제거, Sprint > US 2단계 구조로 단순화
-- DoD 계산: US별 완료율로 변경
+- **v3.3.0:** 파일명 명시화 — `retrospective.md` → `sprint-retrospective.md`
+- **v3.2.0:** US 회고 기반 Sprint 회고 구조로 전환
+  - 파일 구조에 `us-{N.M}-retrospective.md` 추가
+  - Step 2: US 회고 수집 단계 신규 추가 (`us-*-retrospective.md` → Sprint 회고 입력)
+  - 자동 회고: plan.md 기반 → US 회고 기반으로 전환
+- **v3.1.0:** Sprint > US > Step 3단계 구조 반영
+  - DoD 파싱 예시를 Step 단위 체크박스 형식으로 변경
+- **v3.0.0:** Iteration 중간 계층 제거, Sprint > US > Step 3단계 구조
+- DoD 계산: Step 체크박스 기준 US별 완료율로 변경

@@ -401,6 +401,10 @@ Phase 3: [제목] (MM/DD ~ MM/DD, N일)
 
 ---
 
+> 💡 **how-diagram.md는 Planning MVP다.**
+> Phase/범위/지표가 학습하면서 바뀌는 것은 자연스러운 과정이다.
+> 변경은 실패가 아니라 학습의 증거. → `problem-solving-principles.md` "12. 계획 MVP 원칙" 참조
+
 ## Success Criteria
 
 ### 필수 (Must Have)

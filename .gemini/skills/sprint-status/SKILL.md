@@ -199,36 +199,28 @@ US 구조와 `완료 목표일`이 있으면 아래를 추가 출력:
 
 ## 추가 정보 제공
 
-### US별 진행 상황 (선택)
+### US > Step별 진행 상황 (선택)
 
-Sprint Plan에 US 구조가 있는 경우:
+Sprint Plan에 US > Step 구조가 있는 경우:
 
 ```
 📊 Sprint 0 진행 상황
 
-🎯 Goal: 플랫폼 엔지니어링 + 아키텍처 설계
+🎯 Goal: EDA 핵심 개념 학습
 
-📈 Overall Progress: ██████████ 100% (15/15)
+📈 Overall Progress: ████████░░ 67% (8/12)
 
 ---
 
-### Sprint 시작 ✅ (100%)
-- ✅ ADR-001: 4가지 방법 선택 근거
-- ✅ ADR-002: PoC 범위 축소 근거
-- ✅ ADR-003: 시각화 우선 워크플로우
+### US-0.1: Kafka 기본 메시징 개념 학습 ✅ (100%)
+  ✅ Step-0.1.1: Producer/Consumer — 작성 + 리뷰 완료
+  ✅ Step-0.1.2: Topic/Partition — 작성 + 리뷰 완료
+  ✅ Step-0.1.3: Consumer Group — 작성 + 리뷰 완료
 
-### US-0.1: 인프라 환경 구축 ✅ (100%)
-- ✅ 인프라 다이어그램 완성
-- ✅ ADR-004 완성
-- ✅ Docker Compose 구현
-
-### US-0.2: 프로젝트 스캐폴딩 ✅ (100%)
-- ✅ 애플리케이션 구조 다이어그램 완성
-- ✅ Spring Boot 프로젝트 생성
-
-### US-0.3: 문서화 ✅ (100%)
-- ✅ README 작성
-- ✅ C4 Diagram 작성
+### US-0.2: 메시지 신뢰성 및 장애 대응 학습 🔄 (33%)
+  ✅ Step-0.2.1: At Least Once + 멱등성 — 작성 + 리뷰 완료
+  🔄 Step-0.2.2: DLQ — 작성 중
+  📋 Step-0.2.3: Partition Key — 대기
 ```
 
 ### Blockers 표시
@@ -314,12 +306,15 @@ plan.md에 Blockers 섹션이 있으면:
 
 ---
 
-**버전:** 3.1.0
-**최종 업데이트:** 2026-02-25
+**버전:** 3.2.0
+**최종 업데이트:** 2026-02-28
 **변경 사항:**
+- **v3.2.0:** Sprint > US > Step 3단계 구조 반영
+  - US별 진행 상황 시각화에 Step 단위 표시 추가
+  - Step별 상태(✅/🔄/📋) 표시로 세밀한 진행 추적
 - **v3.1.0:** US 일정 추적 추가
   - `plan.md`의 `완료 목표일` 기반으로 US 상태(Ahead/On-track/Delayed) 자동 분류
   - 상태별 집계와 US별 일정 상태 표 출력 포맷 추가
   - 목표일 누락/형식 오류 시 `Unknown` 처리 규칙 추가
-- **Breaking:** Iteration 중간 계층 제거, Sprint > US 2단계 구조로 단순화
-- US별 진행 상황 표시로 변경
+- **Breaking:** Iteration 중간 계층 제거, Sprint > US > Step 3단계 구조
+- US > Step별 진행 상황 표시로 변경
