@@ -1,9 +1,6 @@
 ---
 name: 1h-agile-phase
 description: "2W(What/Why) 정의 후 How를 Mermaid 다이어그램과 Phase로 구조화하는 도구. 문제 해결 과정 시각화를 통한 범위/단계 통제."
-allowed-tools: Read,Write,Edit,Glob,Grep
-disable-model-invocation: false
-user-invocable: true
 ---
 
 
@@ -213,12 +210,20 @@ Phase 2: [기능 확장 / 안정화]
 
 #### 2.3 Phase별 일정 산정
 
-**각 Phase에 시작일자와 목표일자를 부여:**
+**각 Phase에 시작일자와 목표일자를 부여하고, 일정 전략(tight/buffered)을 확정:**
 
 1. **사용자에게 프로젝트 시작일자를 확인한다** (가정하지 않고 반드시 질문)
-2. 전체 제약 기간(예: 2주)과 Phase 수를 고려하여 각 Phase별 기간을 배분
+2. 전체 제약 기간(예: 2주)과 Phase 수를 고려하여 각 Phase별 **순수 작업 기간**을 먼저 배분
 3. 시행착오가 많은 Phase(테스트, 검증 등)에 더 많은 기간을 배분
-4. 각 Phase 헤더에 `(MM/DD ~ MM/DD, N일)` 형식으로 명시
+4. **리스크 기반 버퍼 추천을 생성한다**
+   - High risk (처음 다루는 기술, 외부 의존 큼, 테스트/검증 비중 높음): `+3일`
+   - Medium risk (신규 요소 일부, 통합 난이도 보통): `+2일`
+   - Low risk (익숙한 작업 중심, 범위 작음): `+1일`
+   - Very low risk (1~2일 단기/단순 작업): `+0일`
+5. 사용자에게 일정 전략을 확인한다:
+   - `tight`: 버퍼 없이 순수 작업 기간만 반영 (`+0일`)
+   - `buffered`: 추천 버퍼(또는 사용자 조정 버퍼) 반영
+6. 확정된 전략을 기준으로 각 Phase 헤더에 `(MM/DD ~ MM/DD, N일)` 형식으로 명시
 
 ```
 Phase 1: [제목] (MM/DD ~ MM/DD, N일)
@@ -226,8 +231,21 @@ Phase 2: [제목] (MM/DD, 1일)
 Phase 3: [제목] (MM/DD ~ MM/DD, N일)
 ```
 
+**사용자 확인 메시지 예시:**
+```
+📅 일정 전략 확인
+- 순수 작업 기간: 10일
+- 리스크 평가: Medium risk
+- 추천 버퍼: +2일
+
+이번 계획을 어떻게 잡을까요?
+1) tight (버퍼 0일)
+2) buffered (추천 +2일 반영)
+```
+
 **주의:**
 - 여기서 산정하는 날짜는 **목표 날짜**이며, 확정 일정이 아님을 `how-diagram.md`에 명시한다
+- `how-diagram.md`에 일정 전략(`tight|buffered`)과 버퍼 근거를 반드시 기록한다
 - 구체적인 Sprint 계획(태스크 분배)은 `/sprint-start`에서 담당하며, 그 시점에 실제 시작일과 비교하여 조정한다
 
 ---
@@ -267,84 +285,31 @@ Phase 3: [제목] (MM/DD ~ MM/DD, N일)
 
 ## 문서화 (how-diagram.md)
 
-**파일 생성:** `problems/[문제명]/how-diagram.md`
+**파일 생성 방식:**
+1. 템플릿 파일 복사: `templates/how-diagram.md` → `problems/[문제명]/how-diagram.md`
+2. 템플릿의 Core 섹션부터 작성 후 사용자 리뷰
+3. 필요 시 Extended(Optional) 섹션 확장
 
-```markdown
-# [문제명] - How 구조화
+**템플릿 구조 원칙 (2-layer):**
+- **Core (필수):**
+  - Quick Guide
+  - 2W 요약
+  - 다이어그램
+  - 범위 확정 (In/Out/Deferred)
+  - Phase 계획 (Roadmap)
+  - 일정 전략 (Scheduling Strategy)
+  - 평가 지표
+  - ADR 요약 목록
+- **Extended (선택):**
+  - 진행 상태
+  - Phase 상세 블록
+  - 실험/검증 시나리오 상세
 
-## Quick Guide (30초 문서 이해 가이드)
-- 핵심 결론: 2W 기준으로 이번 실행 범위와 Phase 순서, 완료 지표를 확정한다.
-- 확정된 결정: In/Out/Deferred 항목, Phase 경계, 정량/정성 지표 목표값.
-- 바로 실행할 내용: Phase 1 시작 범위, 첫 Sprint로 넘길 산출물, 측정 방식 합의.
-- 판단 근거: What/Why 제약과 다이어그램 흐름을 기준으로 범위를 분리했다.
-- 미확정/리스크: 근거 없는 Deferred, 측정 불가능한 지표, 2W와 불일치한 범위.
-- 리뷰 요청 포인트: In/Out/Deferred 타당성과 핵심 지표의 측정 가능성만 먼저 확정한다.
-
----
-
-## 2W 요약 (from 2w-brainstorm.md)
-- **What:** [문제 정의]
-- **Why:** [왜 해야 하는지]
-- **제약 조건:** [시간/협업/완성도]
-
----
-
-## 다이어그램
-
-### 유형: [Flowchart/Sequence/C4 등]
-
-```mermaid
-[Mermaid 코드]
-```
-
-### 다이어그램 설명
-[각 단계/컴포넌트 설명]
-
----
-
-## 범위 확정
-
-### ✅ In Scope
-- [항목 1]
-- [항목 2]
-
-### ❌ Out of Scope
-- [항목 1] - 이유: [왜 제외]
-
-### ⏸️ Deferred
-- [항목 1] - 조건: [언제 결정]
-
----
-
-## Phase 계획 (Roadmap)
-
-| Phase | 목표 | 핵심 태스크 |
-|-------|------|-------------|
-| Phase 1 | [목표] | [태스크 1, 2] |
-| Phase 2 | [목표] | [태스크 3, 4] |
-
-> 각 Phase는 `/sprint-start`를 통해 구체적인 Sprint로 실행됩니다.
-
----
-
-## 평가 지표
-
-### 정량 지표
-- [지표 1]: [목표값]
-- [지표 2]: [목표값]
-
-### 정성 지표
-- [지표 1]: [기준]
-- [지표 2]: [기준]
-
----
-
-## ADR (Architecture Decision Records)
-
-### ADR-001: [결정 제목]
-- **Decision:** [결정 내용]
-- **Why:** [이유]
-```
+**일정 전략 누락 방지 게이트 (필수):**
+- `일정 전략 (Scheduling Strategy)` 섹션은 반드시 채운다
+- 사용자와 `tight|buffered`를 논의해 최종 전략을 확정한다
+- 버퍼 값과 근거를 문서에 기록한다
+- `사용자 합의 기록`(날짜/논의 내용/결론) 없이 `/sprint-start`로 넘기지 않는다
 
 ---
 
@@ -365,6 +330,9 @@ Phase 3: [제목] (MM/DD ~ MM/DD, N일)
 - [ ] 정량 지표 정의했나?
 - [ ] 정성 지표 정의했나?
 - [ ] how-diagram.md 생성했나?
+- [ ] `templates/how-diagram.md` 기반으로 작성했나? (Core 섹션 필수)
+- [ ] 일정 전략(`tight|buffered`)을 사용자와 논의해 확정했나?
+- [ ] 버퍼 값/근거/합의 기록을 문서에 남겼나?
 
 ---
 
